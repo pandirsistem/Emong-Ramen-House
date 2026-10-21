@@ -15,43 +15,51 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND FOTO RAMEN ORIGINAL & TERLIHAT JELAS */
-  /* Overlay dibuat sangat tipis (20-30%) hanya agar teks tetap terbaca */
+  /* BACKGROUND FOTO RAMEN DENGAN OVERLAY DARK GLOW */
   background: 
-    linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.45)),
+    linear-gradient(rgba(10, 15, 29, 0.75), rgba(10, 15, 29, 0.85)),
     url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
   background-size: cover;
   color: #ffffff;
   overscroll-behavior-y: none;
 }
 
-/* HEADER BAGIAN ATAS DIBUAT TRANSPARAN KEREN */
-header, .bg-white\/95 {
-  background-color: rgba(15, 23, 42, 0.65) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-}
-
-/* KARTU DASHBOARD / CARD SEMI-TRANSPARAN (GAMBAR RAMEN DI BELAKANG TERLIHAT) */
-.bg-white {
-  background-color: rgba(15, 23, 42, 0.6) !important;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+/* EFEK TEKS GLOWING / MENYALA SEPERTI CONTOH GAMBAR */
+.text-glow {
   color: #ffffff !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.6), 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
-/* PENYESUAIAN WARNA TEKS DIBAGIAN DALAM CARD AGAR TETAP KONTRAS */
+.text-glow-emerald {
+  color: #ffffff !important;
+  text-shadow: 0 0 10px rgba(16, 185, 129, 0.6), 0 0 20px rgba(16, 185, 129, 0.4);
+}
+
+/* KETEBALAN & WARNA TEKS SERTA JUDUL PADA CARD */
+h1, h2, h3, h4, .font-bold, .font-extrabold, .font-black {
+  color: #ffffff !important;
+  letter-spacing: -0.01em;
+}
+
+/* KARTU DASHBOARD / CONTAINER GELAP TRANSPARAN MODERN */
+.bg-white {
+  background-color: rgba(15, 23, 42, 0.75) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* TEKS PADA KARTU DASHBOARD */
 .text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600 {
   color: #f8fafc !important;
 }
 .text-slate-500 {
-  color: #cbd5e1 !important;
+  color: #94a3b8 !important;
 }
 .bg-slate-50, .bg-slate-100 {
-  background-color: rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(30, 41, 59, 0.6) !important;
 }
 
 /* Print thermal receipt styling */
