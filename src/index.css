@@ -15,7 +15,7 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND RAMEN HOUSE DENGAN OVERLAY HANGAT & TAJAM */
+  /* BACKGROUND FOTO RAMEN HOUSE DENGAN OVERLAY HANGAT & TAJAM */
   background: 
     linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.65)),
     url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
@@ -24,7 +24,7 @@ body {
   overscroll-behavior-y: none;
 }
 
-/* HEADER GELAP TRANSPARAN MODERN AGAR NAMA STORE KELIHATAN JELES */
+/* HEADER GELAP TRANSPARAN MODERN AGAR NAMA STORE KELIHATAN JELAS */
 header {
   background-color: rgba(15, 23, 42, 0.85) !important;
   backdrop-filter: blur(16px) !important;
@@ -32,13 +32,13 @@ header {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-header h1, header p, header span {
+header h1, header p, header span, header div {
   color: #ffffff !important;
 }
 
-/* KARTU DASHBOARD CLEAN GLASSMORPHISM (PUTIH KACA KONTRAST) */
+/* KARTU DASHBOARD CLEAN GLASSMORPHISM (PUTIH KACA KONTRAS) */
 .bg-white {
-  background-color: rgba(255, 255, 255, 0.92) !important;
+  background-color: rgba(255, 255, 255, 0.94) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.6) !important;
@@ -46,14 +46,19 @@ header h1, header p, header span {
   border-radius: 1rem !important;
 }
 
-/* KONTRAST TEKS TAJAM DI DALAM KARTU */
-.text-slate-900, .text-slate-800, .text-slate-700 {
-  color: #0f172a !important;
-  font-weight: 700 !important;
+/* KONTRAST TEKS UMUM DALAM DOKUMEN */
+p, span, label, h1, h2, h3, h4, button {
+  color: #0f172a;
 }
 
-.text-slate-600, .text-slate-500 {
-  color: #475569 !important;
+/* KONTRAST TEKS KHUSUS MODAL / DROPDOWN MENU HARUS GELAP PEKAT */
+[role="dialog"] *, .fixed *, [class*="shadow-"] * {
+  color: #0f172a !important;
+}
+
+/* PERBAIKAN TOMBOL DAN PILIHAN MENU AKTIF */
+.bg-purple-600, [class*="bg-purple-"], [class*="bg-emerald-"] {
+  color: #ffffff !important;
 }
 
 /* Print thermal receipt styling */
