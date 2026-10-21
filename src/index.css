@@ -96,10 +96,16 @@ input::placeholder, textarea::placeholder {
   color: #64748b !important;
 }
 
-/* PERBAIKAN PERMANEN DROPDOWN & MODAL MENU ADMIN */
-[role="dialog"],
-.fixed.inset-0,
-div[class*="shadow-"] {
+/* OVERLAY MODAL TRANSPARAN (AGAR LATAR BELAKANG RESTORAN RAMEN TETAP TERLIHAT) */
+.fixed.inset-0 {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+  backdrop-filter: blur(2px) !important;
+}
+
+/* KOTAK POP-UP DROPDOWN & MODAL MENU ADMIN DIBUAT PUTIH SHARP */
+[role="dialog"] > div,
+.fixed.inset-0 > div,
+div[class*="shadow-2xl"] {
   background-color: #ffffff !important;
 }
 
