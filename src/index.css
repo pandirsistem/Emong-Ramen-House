@@ -15,51 +15,45 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND FOTO RAMEN DENGAN OVERLAY DARK GLOW */
+  /* BACKGROUND RAMEN HOUSE DENGAN OVERLAY HANGAT & TAJAM */
   background: 
-    linear-gradient(rgba(10, 15, 29, 0.75), rgba(10, 15, 29, 0.85)),
+    linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.65)),
     url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
   background-size: cover;
-  color: #ffffff;
+  color: #0f172a;
   overscroll-behavior-y: none;
 }
 
-/* EFEK TEKS GLOWING / MENYALA SEPERTI CONTOH GAMBAR */
-.text-glow {
-  color: #ffffff !important;
-  text-shadow: 0 0 10px rgba(59, 130, 246, 0.6), 0 0 20px rgba(59, 130, 246, 0.4);
+/* HEADER GELAP TRANSPARAN MODERN AGAR NAMA STORE KELIHATAN JELES */
+header {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-.text-glow-emerald {
+header h1, header p, header span {
   color: #ffffff !important;
-  text-shadow: 0 0 10px rgba(16, 185, 129, 0.6), 0 0 20px rgba(16, 185, 129, 0.4);
 }
 
-/* KETEBALAN & WARNA TEKS SERTA JUDUL PADA CARD */
-h1, h2, h3, h4, .font-bold, .font-extrabold, .font-black {
-  color: #ffffff !important;
-  letter-spacing: -0.01em;
-}
-
-/* KARTU DASHBOARD / CONTAINER GELAP TRANSPARAN MODERN */
+/* KARTU DASHBOARD CLEAN GLASSMORPHISM (PUTIH KACA KONTRAST) */
 .bg-white {
-  background-color: rgba(15, 23, 42, 0.75) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5) !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25) !important;
+  border-radius: 1rem !important;
 }
 
-/* TEKS PADA KARTU DASHBOARD */
-.text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600 {
-  color: #f8fafc !important;
+/* KONTRAST TEKS TAJAM DI DALAM KARTU */
+.text-slate-900, .text-slate-800, .text-slate-700 {
+  color: #0f172a !important;
+  font-weight: 700 !important;
 }
-.text-slate-500 {
-  color: #94a3b8 !important;
-}
-.bg-slate-50, .bg-slate-100 {
-  background-color: rgba(30, 41, 59, 0.6) !important;
+
+.text-slate-600, .text-slate-500 {
+  color: #475569 !important;
 }
 
 /* Print thermal receipt styling */
