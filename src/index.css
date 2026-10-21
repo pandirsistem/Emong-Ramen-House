@@ -14,7 +14,34 @@ html, body, #root {
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
+  
+  /* BACKGROUND FOTO RESTORAN RAMEN DENGAN OVERLAY GELAP DINGIN/HANGAT */
+  background: 
+    linear-gradient(rgba(12, 10, 9, 0.82), rgba(12, 10, 9, 0.92)),
+    url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
+  background-size: cover;
+  color: #f8fafc;
   overscroll-behavior-y: none;
+}
+
+/* KARTU DASHBOARD / CARD DENGAN EFEK GLASSMORPHISM semi transparan agar menyatu dengan background */
+.bg-white {
+  background-color: rgba(24, 24, 27, 0.85) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #f4f4f5 !important;
+}
+
+/* PENYESUAIAN WARNA TEKS DIBAGIAN DALAM CARD */
+.text-slate-900, .text-slate-800, .text-slate-700 {
+  color: #f4f4f5 !important;
+}
+.text-slate-600, .text-slate-500 {
+  color: #a1a1aa !important;
+}
+.bg-slate-50, .bg-slate-100 {
+  background-color: rgba(39, 39, 42, 0.6) !important;
 }
 
 /* Print thermal receipt styling */
