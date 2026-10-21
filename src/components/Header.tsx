@@ -72,7 +72,7 @@ export function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#1e0a0f] text-white border-b border-rose-900/40 shadow-lg px-2 sm:px-4 py-2">
+    <header className="sticky top-0 z-40 w-full bg-[#1e0a0f] text-white border-b border-rose-900/40 shadow-lg px-2 sm:px-4 pt-[calc(env(safe-area-inset-top)+8px)] pb-2 transition-all">
       <div className="w-full mx-auto h-12 sm:h-14 flex items-center justify-between gap-1.5 sm:gap-4">
         
         {/* Logo & Store Branding */}
