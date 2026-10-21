@@ -73,34 +73,33 @@ export function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
+    <header className="sticky top-0 z-40 w-full bg-[#1e0a0f] text-white border-b border-rose-900/40 shadow-lg px-2 sm:px-4 py-2">
+      <div className="w-full mx-auto h-12 sm:h-14 flex items-center justify-between gap-1.5 sm:gap-4">
         
-        {/* Logo & Store Branding */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1 sm:flex-initial">
-          {/* 2. TAG GAMBAR DENGAN LOGO BARU */}
+        {/* Logo & Store Branding - POJOK KIRI PRESI S */}
+        <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
           <img 
             src={logoBuhun} 
             alt="Buhun Ramen House" 
-            className="w-7 h-7 sm:w-10 sm:h-10 shrink-0 rounded-lg sm:rounded-2xl object-cover border border-slate-200 shadow-md shadow-emerald-500/10" 
+            className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-lg sm:rounded-xl object-cover border border-amber-500/40 shadow-sm" 
           />
 
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1 sm:gap-1.5">
-              <h1 className="font-black text-slate-900 text-xs sm:text-base tracking-tight whitespace-nowrap uppercase">
+          <div className="min-w-0 flex-1 my-auto">
+            <div className="flex items-center gap-1 sm:gap-1.5 leading-none">
+              <h1 className="font-extrabold text-white text-xs sm:text-base tracking-tight whitespace-nowrap uppercase m-0 leading-none">
                 {settings.businessName || 'EMONG RAMEN HOUSE'}
               </h1>
-              <span className="hidden sm:inline-block text-[9px] font-bold px-1.5 py-0.2 rounded-sm bg-emerald-100 text-emerald-800 tracking-wider uppercase shrink-0">
+              <span className="hidden sm:inline-block text-[9px] font-black px-1.5 py-0.5 rounded-xs bg-amber-500 text-slate-950 tracking-wider uppercase shrink-0">
                 POS
               </span>
             </div>
-            <div className="hidden sm:flex items-center gap-2 text-[10px] sm:text-[11px] text-slate-500 truncate">
+            <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-amber-200/80 truncate leading-tight mt-0.5">
               <span className="truncate">{settings.tagline || 'System Kasir & Manajemen'}</span>
               <a
                 href={`https://wa.me/${cleanPhone}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-0.5 text-emerald-700 hover:text-emerald-800 font-semibold shrink-0"
+                className="hidden sm:inline-flex items-center gap-0.5 text-amber-400 hover:text-amber-300 font-semibold shrink-0"
                 title="Hubungi WhatsApp Pemilik"
               >
                 <Phone className="w-2.5 h-2.5" />
@@ -110,7 +109,7 @@ export function Header({
           </div>
         </div>
 
-        {/* Action Buttons in Header */}
+        {/* Action Buttons in Header - POJOK KANAN PRESISI */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <PWAInstallButton />
 
@@ -118,7 +117,7 @@ export function Header({
           <button
             type="button"
             onClick={onOpenVoice}
-            className="inline-flex items-center justify-center gap-1 p-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-[11px] sm:text-xs font-bold shadow-xs shadow-emerald-600/30 transition-all active:scale-95 cursor-pointer min-h-[32px] sm:min-h-[36px]"
+            className="inline-flex items-center justify-center gap-1 p-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-[11px] sm:text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer min-h-[32px] sm:min-h-[36px]"
             title="Buka Input Suara AI"
           >
             <Mic className="w-3.5 h-3.5 shrink-0 animate-pulse" />
@@ -131,12 +130,12 @@ export function Header({
               type="button"
               onClick={handleGoogleSheetsClick}
               disabled={isExporting}
-              className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-semibold transition-colors min-h-[36px] cursor-pointer disabled:opacity-50"
+              className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors min-h-[36px] cursor-pointer disabled:opacity-50"
               title="Sinkronkan Data ke Google Sheets & Buka Spreadsheet"
             >
-              <FileSpreadsheet className={`w-3.5 h-3.5 text-emerald-600 ${isExporting ? 'animate-spin' : ''}`} />
+              <FileSpreadsheet className={`w-3.5 h-3.5 text-emerald-400 ${isExporting ? 'animate-spin' : ''}`} />
               <span className="hidden lg:inline">{isExporting ? 'Syncing...' : 'Google Sheets'}</span>
-              <ExternalLink className="w-2.5 h-2.5 text-emerald-500 ml-0.5" />
+              <ExternalLink className="w-2.5 h-2.5 text-emerald-300 ml-0.5" />
             </button>
           )}
 
@@ -145,10 +144,10 @@ export function Header({
             <button
               type="button"
               onClick={onOpenGuide}
-              className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium transition-colors min-h-[36px]"
+              className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium transition-colors min-h-[36px]"
               title="Buka Panduan Setup & Webhook"
             >
-              <BookOpen className="w-3.5 h-3.5 text-blue-600" />
+              <BookOpen className="w-3.5 h-3.5 text-sky-400" />
               <span>Panduan</span>
             </button>
           )}
@@ -162,8 +161,8 @@ export function Header({
               aria-label="Buka Menu Profil Pengguna"
               className={`flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-semibold transition-all min-h-[34px] sm:min-h-[36px] cursor-pointer select-none active:scale-95 ${
                 isAdmin
-                  ? 'bg-purple-50 border-purple-200 text-purple-900 hover:bg-purple-100 focus:ring-2 focus:ring-purple-300'
-                  : 'bg-emerald-50 border-emerald-200 text-emerald-900 hover:bg-emerald-100 focus:ring-2 focus:ring-emerald-300'
+                  ? 'bg-purple-900/60 border-purple-500/40 text-purple-100 hover:bg-purple-900/80'
+                  : 'bg-emerald-900/60 border-emerald-500/40 text-emerald-100 hover:bg-emerald-900/80'
               }`}
             >
               <div
@@ -192,10 +191,10 @@ export function Header({
             {showProfileMenu && (
               <>
                 <div
-                  className="fixed inset-0 z-40 bg-black/5"
+                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs"
                   onClick={() => setShowProfileMenu(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-24px)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-fade-in">
+                <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-fade-in">
                   <div className="p-3 border-b border-slate-100 bg-slate-50 rounded-xl mb-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Akun Aktif:
@@ -217,10 +216,10 @@ export function Header({
                     </div>
                   </div>
 
-                  <div className="px-3 py-2 text-[11px] text-slate-500 space-y-1">
+                  <div className="px-3 py-2 text-[11px] text-slate-600 space-y-1">
                     <p className="flex justify-between">
                       <span>Toko:</span>
-                      <strong className="text-slate-700 truncate max-w-[150px]">{settings.businessName}</strong>
+                      <strong className="text-slate-800 truncate max-w-[150px]">{settings.businessName}</strong>
                     </p>
                     <p className="flex justify-between items-center">
                       <span>Owner WA:</span>
@@ -255,13 +254,13 @@ export function Header({
 
           {/* HAMBURGER MENU ICON (☰) FOR ADMIN NAV AT FAR RIGHT */}
           {isAdmin && (
-            <div className="relative ml-1">
+            <div className="relative ml-0.5">
               <button
                 type="button"
                 onClick={() => setShowNavMenu((prev) => !prev)}
                 aria-expanded={showNavMenu}
                 aria-label="Buka Menu Navigasi Utama"
-                className="p-2 sm:p-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition-colors flex items-center justify-center shadow-sm cursor-pointer active:scale-95 min-h-[34px] sm:min-h-[36px]"
+                className="p-2 sm:p-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition-colors flex items-center justify-center shadow-md cursor-pointer active:scale-95 min-h-[34px] sm:min-h-[36px]"
                 title="Menu Navigasi Utama"
               >
                 <Menu className="w-5 h-5" />
@@ -276,10 +275,10 @@ export function Header({
               {showNavMenu && (
                 <>
                   <div
-                    className="fixed inset-0 z-40 bg-black/10"
+                    className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs"
                     onClick={() => setShowNavMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-24px)] bg-white rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-50 animate-fade-in space-y-1">
+                  <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-50 animate-fade-in space-y-1">
                     <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-1 bg-slate-50 rounded-xl">
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -316,7 +315,7 @@ export function Header({
                           className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                             isActive
                               ? 'bg-purple-600 text-white shadow-sm'
-                              : 'text-slate-700 hover:bg-purple-50 hover:text-purple-900'
+                              : 'text-slate-800 hover:bg-purple-50 hover:text-purple-900'
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
