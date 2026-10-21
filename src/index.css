@@ -15,24 +15,23 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND FOTO RAMEN HOUSE DENGAN OVERLAY HANGAT */
+  /* BACKGROUND RAMEN MERAH/KREM BARU DENGAN OVERLAY HARMONIS */
   background: 
-    linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.75)),
+    linear-gradient(rgba(30, 10, 15, 0.25), rgba(30, 10, 15, 0.35)),
     url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
   background-size: cover;
-  color: #0f172a;
+  color: #1e1b18;
   overscroll-behavior-y: none;
 }
 
-/* HEADER BAGIAN ATAS (GELAP KACA ELEGAN & SIMETRIS) */
+/* HEADER DIBUAT WARNA NADA RAMEN HANGAT AGAR TULISAN PUTIH SANGAT CLEAR */
 header {
-  background-color: rgba(15, 23, 42, 0.92) !important;
+  background-color: rgba(43, 16, 22, 0.92) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-/* WARNA TEKS KHUSUS DI DALAM HEADER ATAS */
 header h1, 
 header p, 
 header .font-bold,
@@ -41,41 +40,40 @@ header .font-extrabold {
 }
 
 header span {
-  color: #cbd5e1;
+  color: #fecdd3 !important;
 }
 
-/* KARTU DASHBOARD CLEAN GLASSMORPHISM */
+/* KARTU DASHBOARD CLEAN GLASSMORPHISM DENGAN BORDER WARM */
 .bg-white {
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
   backdrop-filter: blur(12px) !important;
   -webkit-backdrop-filter: blur(12px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3) !important;
+  border: 1px solid rgba(251, 113, 133, 0.25) !important;
+  box-shadow: 0 10px 25px -5px rgba(136, 19, 55, 0.12) !important;
   border-radius: 1rem !important;
 }
 
-/* TEKS DASAR DASHBOARD (HITAM/ABU GELAP TAJAM) */
+/* KONTRAST TEKS TAJAM DI DALAM KARTU */
 p, label, h1, h2, h3, h4 {
-  color: #0f172a;
+  color: #1e1b18;
 }
 
 .text-slate-900, .text-slate-800, .text-slate-700 {
-  color: #0f172a !important;
+  color: #18181b !important;
   font-weight: 700 !important;
 }
 
 .text-slate-600, .text-slate-500 {
-  color: #334155 !important;
+  color: #4b5563 !important;
 }
 
-/* PERBAIKAN PERMANEN DROPDOWN & MODAL MENU ADMIN (MEMBERSIHKAN TEKS TERSAMAR) */
+/* MENUS DROPDOWN & DIALOG ELEGAN */
 [role="dialog"],
 .fixed.inset-0,
 div[class*="shadow-"] {
   background-color: #ffffff !important;
 }
 
-/* SEMUA TEKS ITEM DI DALAM MENU NAVIGASI HARUS GELAP & HITAM TAJAM */
 [role="dialog"] button,
 [role="dialog"] span,
 [role="dialog"] p,
@@ -84,11 +82,11 @@ div[class*="shadow-"] {
 .fixed.inset-0 span,
 .fixed.inset-0 p,
 .fixed.inset-0 div {
-  color: #0f172a !important;
+  color: #1e1b18 !important;
   font-weight: 600 !important;
 }
 
-/* KECUALI ITEM MENU YANG SEDANG AKTIF (WARNA UNGU/HIJAU TEKSNYA HARUS PUTIH) */
+/* MENU AKTIF HIJAU / UNGU */
 [role="dialog"] button.bg-purple-600,
 [role="dialog"] button.bg-purple-600 *,
 [role="dialog"] button[class*="bg-purple-"],
@@ -96,11 +94,6 @@ div[class*="shadow-"] {
 [role="dialog"] button[class*="bg-emerald-"],
 [role="dialog"] button[class*="bg-emerald-"] * {
   color: #ffffff !important;
-}
-
-/* EFEK HOVER ITEM MENU */
-[role="dialog"] button:hover {
-  background-color: #f1f5f9 !important;
 }
 
 /* Print thermal receipt styling */
