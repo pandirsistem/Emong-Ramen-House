@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Emong Ramen" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#059669" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>EMONG RAMEN HOUSE - System Kasir &amp; Manajemen</title>
+    <meta name="description" content="EMONG RAMEN HOUSE - System Kasir &amp; Manajemen Keuangan Multi-Role dengan AI Voice, Firebase, dan Google Sheets." />
+    <meta property="og:title" content="EMONG RAMEN HOUSE - System Kasir &amp; Manajemen" />
+    <meta property="og:description" content="EMONG RAMEN HOUSE - System Kasir &amp; Manajemen Keuangan Multi-Role dengan AI Voice, Firebase, dan Google Sheets." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script>
+      // Suppress Vite HMR WebSocket error in AI Studio preview where HMR is disabled
+      (function () {
+        try {
+          var OriginalWS = window.WebSocket;
+          if (OriginalWS) {
+            window.WebSocket = function (url, protocols) {
+              if (
+                protocols === 'vite-hmr' ||
+                (typeof protocols === 'string' && protocols.indexOf('vite') !== -1) ||
+                (Array.isArray(protocols) && protocols.indexOf('vite-hmr') !== -1) ||
+                (typeof url === 'string' && url.indexOf('vite-hmr') !== -1)
+              ) {
+                var dummy = {
+                  readyState: 0,
+                  addEventListener: function () {},
+                  removeEventListener: function () {},
+                  send: function () {},
+                  close: function () {},
+                  onopen: null,
+                  onclose: null,
+                  onerror: null,
+                  onmessage: null,
+                };
+                return dummy;
+              }
+              return new OriginalWS(url, protocols);
+            };
+            window.WebSocket.prototype = OriginalWS.prototype;
+          }
+        } catch (e) {}
+
+        window.addEventListener('error', function (event) {
+          if (event && event.filename && event.filename.indexOf('@vite/client') !== -1) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+          }
+        }, true);
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

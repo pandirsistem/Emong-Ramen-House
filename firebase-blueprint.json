@@ -1,0 +1,134 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with role assignment (admin or cashier)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "cashier"] },
+        "shift": { "type": "string" },
+        "passwordHint": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["id", "email", "role", "createdAt"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Marker document indicating admin privileges",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "grantedAt": { "type": "string" }
+      },
+      "required": ["email", "grantedAt"]
+    },
+    "Transaction": {
+      "title": "Transaction Record",
+      "description": "Realtime POS sales or expense transactions for Emong Ramen Haouse",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "type": { "type": "string", "enum": ["pemasukan", "pengeluaran"] },
+        "cashierId": { "type": "string" },
+        "cashierName": { "type": "string" },
+        "shift": { "type": "string" },
+        "title": { "type": "string" },
+        "items": { "type": "string" },
+        "category": { "type": "string" },
+        "totalAmount": { "type": "number" },
+        "cashAmount": { "type": "number" },
+        "nonCashAmount": { "type": "number" },
+        "paymentMethod": { "type": "string", "enum": ["Tunai", "QRIS", "Transfer", "EDC"] },
+        "notes": { "type": "string" },
+        "isEdited": { "type": "boolean" },
+        "updatedAt": { "type": "string" },
+        "updatedBy": { "type": "string" },
+        "editReason": { "type": "string" },
+        "isDeleted": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "date", "type", "totalAmount", "cashierName", "createdAt"]
+    },
+    "DeletedTransaction": {
+      "title": "Deleted Transaction Audit",
+      "description": "Audit record of deleted transactions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "originalTransactionId": { "type": "string" },
+        "deletedAt": { "type": "string" },
+        "deletedBy": { "type": "string" },
+        "deletedByEmail": { "type": "string" },
+        "reason": { "type": "string" },
+        "transactionSnapshot": { "type": "object" }
+      },
+      "required": ["id", "originalTransactionId", "deletedAt", "deletedBy"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "System event activity log for fraud prevention and monitoring",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "action": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "role": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "action", "userEmail", "role", "timestamp"]
+    },
+    "Setting": {
+      "title": "System Settings",
+      "description": "App settings including Google Sheets webhook and contact information",
+      "type": "object",
+      "properties": {
+        "businessName": { "type": "string" },
+        "ownerPhone": { "type": "string" },
+        "spreadsheetUrl": { "type": "string" },
+        "webhookUrl": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles and assigned role"
+    },
+    "/admins/{userId}": {
+      "schema": "Admin",
+      "description": "Admin authorization marker documents"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Realtime transaction records"
+    },
+    "/deleted_transactions/{logId}": {
+      "schema": "DeletedTransaction",
+      "description": "Audit history for deleted transactions"
+    },
+    "/closings/{closingId}": {
+      "schema": "Transaction",
+      "description": "Shift closing deposits"
+    },
+    "/expenses/{expenseId}": {
+      "schema": "Transaction",
+      "description": "Operational expenses"
+    },
+    "/audit_logs/{logId}": {
+      "schema": "AuditLog",
+      "description": "System audit logs"
+    },
+    "/settings/{settingId}": {
+      "schema": "Setting",
+      "description": "Store configuration"
+    }
+  }
+}
