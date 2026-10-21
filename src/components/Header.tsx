@@ -26,7 +26,6 @@ import { PWAInstallButton } from './PWAInstallButton';
 import { ClosingRecord, ExpenseRecord } from '../types';
 import { exportAllToGoogleSheets } from '../lib/googleSheets';
 
-// 1. IMPORT LOGO BARU DARI ASSETS
 import logoBuhun from '../assets/images/pwa_icon_1792480156073.jpg';
 
 interface HeaderProps {
@@ -76,7 +75,7 @@ export function Header({
     <header className="sticky top-0 z-40 w-full bg-[#1e0a0f] text-white border-b border-rose-900/40 shadow-lg px-2 sm:px-4 py-2">
       <div className="w-full mx-auto h-12 sm:h-14 flex items-center justify-between gap-1.5 sm:gap-4">
         
-        {/* Logo & Store Branding - POJOK KIRI PRESI S */}
+        {/* Logo & Store Branding */}
         <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
           <img 
             src={logoBuhun} 
@@ -109,7 +108,7 @@ export function Header({
           </div>
         </div>
 
-        {/* Action Buttons in Header - POJOK KANAN PRESISI */}
+        {/* Action Buttons in Header */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <PWAInstallButton />
 
@@ -191,7 +190,7 @@ export function Header({
             {showProfileMenu && (
               <>
                 <div
-                  className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs"
+                  className="fixed inset-0 z-40 bg-black/40"
                   onClick={() => setShowProfileMenu(false)}
                 />
                 <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-fade-in">
@@ -252,7 +251,7 @@ export function Header({
             )}
           </div>
 
-          {/* HAMBURGER MENU ICON (☰) FOR ADMIN NAV AT FAR RIGHT */}
+          {/* HAMBURGER MENU ICON (☰) FOR ADMIN NAV */}
           {isAdmin && (
             <div className="relative ml-0.5">
               <button
@@ -275,7 +274,7 @@ export function Header({
               {showNavMenu && (
                 <>
                   <div
-                    className="fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-xs"
+                    className="fixed inset-0 z-40 bg-black/40"
                     onClick={() => setShowNavMenu(false)}
                   />
                   <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-50 animate-fade-in space-y-1">
