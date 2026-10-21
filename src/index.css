@@ -15,41 +15,58 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND RAMEN ORIGINAL 100% TAJAM (TANPA OVERLAY PUTIH/SAMAR) */
-  background: url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
-  background-size: cover;
+  /* BACKGROUND FOTO RAMEN HOUSE 100% TAJAM & JERNiH */
+  background: url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed !important;
+  background-size: cover !important;
   color: #0f172a;
   overscroll-behavior-y: none;
 }
 
-/* HEADER BAGIAN ATAS (WARNA GELAP SEPADAN AGAR TEKS NAMA STORE MENYALA TAJAM) */
+/* PAKSA HAPUS BACKGROUND LAPISAN PUTIH/KREM PADA MAIN CONTAINER */
+main, 
+#root > div, 
+.min-h-screen, 
+[class*="bg-slate-"], 
+[class*="bg-gray-"], 
+[class*="bg-zinc-"] {
+  background-color: transparent !important;
+}
+
+/* HEADER BAGIAN ATAS (WARNA GELAP MARUN RAMEN AGAR TEKS HEADER TERLIHAT JELAS) */
 header {
-  background-color: rgba(15, 23, 42, 0.95) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background-color: rgba(30, 10, 15, 0.95) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  display: flex !important;
+  align-items: center !important;
 }
 
-header h1, 
-header p, 
-header .font-bold,
-header .font-extrabold {
+/* PERBAIKAN TEKS & NAMA STORE DI HEADER AGAR SIMETRIS DI TENGAH */
+header h1 {
   color: #ffffff !important;
+  font-weight: 800 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1.2 !important;
 }
 
-header span {
-  color: #94a3b8 !important;
+header p, header span {
+  color: #fecdd3 !important;
+  margin: 0 !important;
 }
 
-/* KARTU DASHBOARD CLEAN TANPA BLUR SAMAR (KARTU PUTIH SOLID DENGAN BORDER TIPIS) */
+/* KARTU DASHBOARD BERSIH (PUTIH SOLID DENGAN BORDER TIPIS TANPA LAPISAN SAMAR) */
 .bg-white {
   background-color: rgba(255, 255, 255, 0.98) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   border: 1px solid rgba(226, 232, 240, 0.8) !important;
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
   border-radius: 1rem !important;
 }
 
-/* KONTRAST TEKS KARTU DASHBOARD */
+/* KONTRAST TEKS PADA KARTU DASHBOARD */
 p, label, h1, h2, h3, h4 {
   color: #0f172a;
 }
@@ -63,7 +80,7 @@ p, label, h1, h2, h3, h4 {
   color: #475569 !important;
 }
 
-/* MENU NAVIGASI DROPDOWN & MODAL */
+/* DROPDOWN & DIALOG MENU ADMIN */
 [role="dialog"],
 .fixed.inset-0,
 div[class*="shadow-"] {
@@ -80,15 +97,6 @@ div[class*="shadow-"] {
 .fixed.inset-0 div {
   color: #0f172a !important;
   font-weight: 600 !important;
-}
-
-[role="dialog"] button.bg-purple-600,
-[role="dialog"] button.bg-purple-600 *,
-[role="dialog"] button[class*="bg-purple-"],
-[role="dialog"] button[class*="bg-purple-"] *,
-[role="dialog"] button[class*="bg-emerald-"],
-[role="dialog"] button[class*="bg-emerald-"] * {
-  color: #ffffff !important;
 }
 
 /* Print thermal receipt styling */
