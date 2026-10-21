@@ -26,6 +26,9 @@ import { PWAInstallButton } from './PWAInstallButton';
 import { ClosingRecord, ExpenseRecord } from '../types';
 import { exportAllToGoogleSheets } from '../lib/googleSheets';
 
+// 1. IMPORT LOGO BARU DARI ASSETS
+import logoBuhun from '../assets/images/pwa_icon_1792480156073.jpg';
+
 interface HeaderProps {
   onOpenVoice: () => void;
   onOpenGuide: () => void;
@@ -72,11 +75,16 @@ export function Header({
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
+        
         {/* Logo & Store Branding */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0 flex-1 sm:flex-initial">
-          <div className="w-7 h-7 sm:w-10 sm:h-10 shrink-0 rounded-lg sm:rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shadow-emerald-500/20 text-sm sm:text-xl">
-            🍜
-          </div>
+          {/* 2. TAG GAMBAR DENGAN LOGO BARU */}
+          <img 
+            src={logoBuhun} 
+            alt="Buhun Ramen House" 
+            className="w-7 h-7 sm:w-10 sm:h-10 shrink-0 rounded-lg sm:rounded-2xl object-cover border border-slate-200 shadow-md shadow-emerald-500/10" 
+          />
+
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1 sm:gap-1.5">
               <h1 className="font-black text-slate-900 text-xs sm:text-base tracking-tight whitespace-nowrap uppercase">
