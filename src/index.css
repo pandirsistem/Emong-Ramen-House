@@ -15,7 +15,7 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND FOTO RAMEN HOUSE 100% TAJAM & JERNiH */
+  /* BACKGROUND FOTO RAMEN HOUSE 100% TAJAM & JERNIH */
   background: url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed !important;
   background-size: cover !important;
   color: #0f172a;
@@ -55,21 +55,41 @@ header p, header span {
   margin: 0 !important;
 }
 
-/* KARTU DASHBOARD CLEAN */
-.bg-white {
-  background-color: rgba(255, 255, 255, 0.98) !important;
+/* KARTU DASHBOARD CLEAN (Kombinasi Krem / Soft Warm Ivory terhadap Background Merah) */
+.bg-white,
+[class*="bg-white"] {
+  background-color: #fffbeb !important; /* Warna Krem Soft / Ivory */
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
-  border: 1px solid rgba(226, 232, 240, 0.8) !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid #fef3c7 !important; /* Border hangat tipis */
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2) !important;
   border-radius: 1rem !important;
+  color: #0f172a !important;
 }
 
-/* PERBAIKAN FORM INPUT (USER, PASSWORD, SEARCh, DLL) - KETIKAN KELIhatan JELAS */
+/* KETEGASAN TEKS & ANGKA DI DALAM KARTU DASHBOARD */
+.bg-white p, 
+.bg-white span, 
+.bg-white div, 
+.bg-white h2, 
+.bg-white h3, 
+.bg-white h4 {
+  color: #0f172a !important; /* Teks & nominal angka menjadi Gelap & Jelas */
+}
+
+/* KETERANGAN / SUBTEKS DI DALAM KARTU */
+.bg-white .text-gray-500,
+.bg-white .text-slate-500,
+.bg-white .text-muted-foreground {
+  color: #475569 !important; /* Grey sedang agar mudah dibaca */
+}
+
+/* PERBAIKAN FORM INPUT (USER, PASSWORD, SEARCH, DLL) */
 input, select, textarea {
   color: #0f172a !important;
   background-color: #ffffff !important;
   font-weight: 600 !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
 input::placeholder, textarea::placeholder {
@@ -98,17 +118,19 @@ div[class*="shadow-"] {
   font-weight: 600 !important;
 }
 
-/* ITEM MENU YANG AKTIF (UNGUNYA TETAP PUTIH TEGAS) */
+/* ITEM MENU YANG AKTIF (WARNA TOMBOL / STATUS TETAP KONTRAS) */
 [role="dialog"] button.bg-purple-600,
 [role="dialog"] button.bg-purple-600 *,
 [role="dialog"] button[class*="bg-purple-"],
 [role="dialog"] button[class*="bg-purple-"] *,
 [role="dialog"] button[class*="bg-emerald-"],
-[role="dialog"] button[class*="bg-emerald-"] * {
+[role="dialog"] button[class*="bg-emerald-"] *,
+button.bg-emerald-600,
+button.bg-emerald-600 * {
   color: #ffffff !important;
 }
 
-/* Print thermal receipt styling */
+/* PRINT THERMAL RECEIPT STYLING */
 @media print {
   body * {
     visibility: hidden;
