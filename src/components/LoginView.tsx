@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+// 1. IMPORT LOGO BARU DARI ASSETS
+import logoBuhun from '../assets/images/pwa_icon_1792480156073.jpg';
+
 export function LoginView() {
   const { loginWithEmailOrUsername, settings } = useAuth();
   const [identifier, setIdentifier] = useState('');
@@ -70,14 +73,17 @@ export function LoginView() {
         <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/60">
           {/* Brand Header */}
           <div className="text-center mb-6">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30 text-3xl">
-              🍜
-            </div>
+            {/* 2. LOGO GAMBAR DARI ASSETS */}
+            <img 
+              src={logoBuhun} 
+              alt="Buhun Ramen House" 
+              className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-3 rounded-2xl object-cover border border-slate-700/60 shadow-lg shadow-emerald-500/20" 
+            />
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white uppercase">
-              {settings.businessName || 'EMONG RAMEN HAOUSE'}
+              {settings.businessName || 'EMONG RAMEN HOUSE'}
             </h1>
             <p className="text-xs sm:text-sm text-emerald-400 font-medium mt-1">
-              {settings.tagline || 'EMONG RAMEN HAOUSE - System Kasir & Manajemen'}
+              {settings.tagline || 'EMONG RAMEN HOUSE - System Kasir & Manajemen'}
             </p>
             <p className="text-[11px] text-slate-400 mt-1">
               Silakan login dengan akun Admin atau Kasir untuk melanjutkan
