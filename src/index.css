@@ -15,31 +15,43 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND FOTO RAMEN WARM & CERAH */
+  /* BACKGROUND FOTO RAMEN ORIGINAL & TERLIHAT JELAS */
+  /* Overlay dibuat sangat tipis (20-30%) hanya agar teks tetap terbaca */
   background: 
-    linear-gradient(rgba(248, 250, 252, 0.82), rgba(241, 245, 249, 0.88)),
+    linear-gradient(rgba(15, 23, 42, 0.35), rgba(15, 23, 42, 0.45)),
     url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
   background-size: cover;
-  color: #0f172a;
+  color: #ffffff;
   overscroll-behavior-y: none;
 }
 
-/* KARTU DASHBOARD BERSIH SEMI-TRANSPARAN DENGAN BLUR */
-.bg-white {
-  background-color: rgba(255, 255, 255, 0.92) !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8) !important;
-  color: #0f172a !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
+/* HEADER BAGIAN ATAS DIBUAT TRANSPARAN KEREN */
+header, .bg-white\/95 {
+  background-color: rgba(15, 23, 42, 0.65) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
-/* KONTRAST TEKS TETAP TAJAM */
-.text-slate-900, .text-slate-800, .text-slate-700 {
-  color: #0f172a !important;
+/* KARTU DASHBOARD / CARD SEMI-TRANSPARAN (GAMBAR RAMEN DI BELAKANG TERLIHAT) */
+.bg-white {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
 }
-.text-slate-600, .text-slate-500 {
-  color: #475569 !important;
+
+/* PENYESUAIAN WARNA TEKS DIBAGIAN DALAM CARD AGAR TETAP KONTRAS */
+.text-slate-900, .text-slate-800, .text-slate-700, .text-slate-600 {
+  color: #f8fafc !important;
+}
+.text-slate-500 {
+  color: #cbd5e1 !important;
+}
+.bg-slate-50, .bg-slate-100 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 /* Print thermal receipt styling */
