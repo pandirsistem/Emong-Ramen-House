@@ -108,19 +108,19 @@ export function Header({
           </div>
         </div>
 
-        {/* Action Buttons in Header */}
+        {/* Action Buttons in Header - TEMA RED RAMEN & AMBER */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
           <PWAInstallButton />
 
-          {/* Voice AI Button */}
+          {/* Voice AI Button (Red-Rose Theme) */}
           <button
             type="button"
             onClick={onOpenVoice}
-            className="inline-flex items-center justify-center gap-1 p-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-[11px] sm:text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer min-h-[32px] sm:min-h-[36px]"
+            className="inline-flex items-center justify-center gap-1 p-1.5 sm:px-3 sm:py-2 rounded-xl bg-gradient-to-r from-red-700 to-rose-800 hover:from-red-800 hover:to-rose-900 border border-rose-500/30 text-white text-[11px] sm:text-xs font-bold shadow-xs transition-all active:scale-95 cursor-pointer min-h-[32px] sm:min-h-[36px]"
             title="Buka Input Suara AI"
           >
-            <Mic className="w-3.5 h-3.5 shrink-0 animate-pulse" />
-            <span className="hidden md:inline">Voice AI</span>
+            <Mic className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
+            <span className="hidden md:inline text-amber-100">Voice AI</span>
           </button>
 
           {/* ADMIN ONLY: Google Sheets Direct Hyperlink & Sync */}
@@ -129,12 +129,12 @@ export function Header({
               type="button"
               onClick={handleGoogleSheetsClick}
               disabled={isExporting}
-              className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-colors min-h-[36px] cursor-pointer disabled:opacity-50"
+              className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-red-950/60 hover:bg-red-900/80 border border-rose-800/50 text-amber-200 text-xs font-semibold transition-colors min-h-[36px] cursor-pointer disabled:opacity-50"
               title="Sinkronkan Data ke Google Sheets & Buka Spreadsheet"
             >
-              <FileSpreadsheet className={`w-3.5 h-3.5 text-emerald-400 ${isExporting ? 'animate-spin' : ''}`} />
+              <FileSpreadsheet className={`w-3.5 h-3.5 text-amber-400 ${isExporting ? 'animate-spin' : ''}`} />
               <span className="hidden lg:inline">{isExporting ? 'Syncing...' : 'Google Sheets'}</span>
-              <ExternalLink className="w-2.5 h-2.5 text-emerald-300 ml-0.5" />
+              <ExternalLink className="w-2.5 h-2.5 text-amber-300 ml-0.5" />
             </button>
           )}
 
@@ -143,10 +143,10 @@ export function Header({
             <button
               type="button"
               onClick={onOpenGuide}
-              className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-medium transition-colors min-h-[36px]"
+              className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-red-950/60 hover:bg-red-900/80 border border-rose-800/50 text-amber-100 text-xs font-medium transition-colors min-h-[36px]"
               title="Buka Panduan Setup & Webhook"
             >
-              <BookOpen className="w-3.5 h-3.5 text-sky-400" />
+              <BookOpen className="w-3.5 h-3.5 text-amber-400" />
               <span>Panduan</span>
             </button>
           )}
@@ -158,29 +158,21 @@ export function Header({
               onClick={() => setShowProfileMenu((prev) => !prev)}
               aria-expanded={showProfileMenu}
               aria-label="Buka Menu Profil Pengguna"
-              className={`flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl border text-xs font-semibold transition-all min-h-[34px] sm:min-h-[36px] cursor-pointer select-none active:scale-95 ${
-                isAdmin
-                  ? 'bg-purple-900/60 border-purple-500/40 text-purple-100 hover:bg-purple-900/80'
-                  : 'bg-emerald-900/60 border-emerald-500/40 text-emerald-100 hover:bg-emerald-900/80'
-              }`}
+              className="flex items-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl bg-red-950/80 border border-rose-800/60 text-amber-100 hover:bg-red-900/80 text-xs font-semibold transition-all min-h-[34px] sm:min-h-[36px] cursor-pointer select-none active:scale-95"
             >
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[11px] font-bold shrink-0 ${
-                  isAdmin ? 'bg-purple-600' : 'bg-emerald-600'
-                }`}
-              >
+              <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-amber-500 to-red-600 flex items-center justify-center text-slate-950 text-[11px] font-black shrink-0 shadow-xs">
                 {isAdmin ? <Shield className="w-3.5 h-3.5" /> : <User className="w-3.5 h-3.5" />}
               </div>
               <div className="text-left hidden md:block">
-                <span className="block leading-none text-[10px] opacity-75">
+                <span className="block leading-none text-[9px] text-amber-300/80">
                   {isAdmin ? '👑 Admin' : '💼 Kasir'}
                 </span>
-                <span className="block font-bold text-xs truncate max-w-[90px]">
+                <span className="block font-bold text-xs truncate max-w-[90px] text-white">
                   {userProfile?.displayName || 'Pengguna'}
                 </span>
               </div>
               <ChevronDown
-                className={`w-3 h-3 opacity-60 hidden sm:block transition-transform duration-200 ${
+                className={`w-3 h-3 text-amber-300/70 hidden sm:block transition-transform duration-200 ${
                   showProfileMenu ? 'rotate-180' : ''
                 }`}
               />
@@ -194,7 +186,7 @@ export function Header({
                   onClick={() => setShowProfileMenu(false)}
                 />
                 <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-fade-in">
-                  <div className="p-3 border-b border-slate-100 bg-slate-50 rounded-xl mb-2">
+                  <div className="p-3 border-b border-slate-100 bg-amber-50/50 rounded-xl mb-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Akun Aktif:
                     </p>
@@ -206,7 +198,7 @@ export function Header({
                       <span
                         className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                           isAdmin
-                            ? 'bg-purple-100 text-purple-800'
+                            ? 'bg-amber-100 text-amber-900 border border-amber-300'
                             : 'bg-emerald-100 text-emerald-800'
                         }`}
                       >
@@ -226,7 +218,7 @@ export function Header({
                         href={`https://wa.me/${cleanPhone}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-bold text-emerald-600 hover:underline"
+                        className="font-bold text-red-700 hover:underline"
                       >
                         {phone}
                       </a>
@@ -251,7 +243,7 @@ export function Header({
             )}
           </div>
 
-          {/* HAMBURGER MENU ICON (☰) FOR ADMIN NAV */}
+          {/* HAMBURGER MENU ICON (☰) FOR ADMIN NAV AT FAR RIGHT */}
           {isAdmin && (
             <div className="relative ml-0.5">
               <button
@@ -259,12 +251,12 @@ export function Header({
                 onClick={() => setShowNavMenu((prev) => !prev)}
                 aria-expanded={showNavMenu}
                 aria-label="Buka Menu Navigasi Utama"
-                className="p-2 sm:p-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white transition-colors flex items-center justify-center shadow-md cursor-pointer active:scale-95 min-h-[34px] sm:min-h-[36px]"
+                className="p-2 sm:p-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-amber-100 border border-rose-500/40 shadow-md transition-all flex items-center justify-center cursor-pointer active:scale-95 min-h-[34px] sm:min-h-[36px]"
                 title="Menu Navigasi Utama"
               >
                 <Menu className="w-5 h-5" />
                 {pendingClosingsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center animate-pulse">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 text-slate-950 text-[9px] font-black flex items-center justify-center animate-pulse">
                     {pendingClosingsCount}
                   </span>
                 )}
@@ -278,7 +270,7 @@ export function Header({
                     onClick={() => setShowNavMenu(false)}
                   />
                   <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-50 animate-fade-in space-y-1">
-                    <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-1 bg-slate-50 rounded-xl">
+                    <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-1 bg-amber-50/60 rounded-xl">
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                           Navigasi Utama
@@ -313,16 +305,16 @@ export function Header({
                           }}
                           className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                             isActive
-                              ? 'bg-purple-600 text-white shadow-sm'
-                              : 'text-slate-800 hover:bg-purple-50 hover:text-purple-900'
+                              ? 'bg-red-700 text-amber-100 shadow-sm'
+                              : 'text-slate-800 hover:bg-red-50 hover:text-red-900'
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
-                            <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-500'}`} />
+                            <Icon className={`w-4 h-4 ${isActive ? 'text-amber-300' : 'text-slate-500'}`} />
                             <span>{item.label}</span>
                           </div>
                           {item.badge && item.badge > 0 ? (
-                            <span className="px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-black animate-pulse">
+                            <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black animate-pulse">
                               {item.badge}
                             </span>
                           ) : null}
