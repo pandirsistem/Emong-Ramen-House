@@ -15,33 +15,31 @@ html, body, #root {
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
-  /* BACKGROUND FOTO RESTORAN RAMEN DENGAN OVERLAY GELAP DINGIN/HANGAT */
+  /* BACKGROUND FOTO RAMEN WARM & CERAH */
   background: 
-    linear-gradient(rgba(12, 10, 9, 0.82), rgba(12, 10, 9, 0.92)),
+    linear-gradient(rgba(248, 250, 252, 0.82), rgba(241, 245, 249, 0.88)),
     url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed;
   background-size: cover;
-  color: #f8fafc;
+  color: #0f172a;
   overscroll-behavior-y: none;
 }
 
-/* KARTU DASHBOARD / CARD DENGAN EFEK GLASSMORPHISM semi transparan agar menyatu dengan background */
+/* KARTU DASHBOARD BERSIH SEMI-TRANSPARAN DENGAN BLUR */
 .bg-white {
-  background-color: rgba(24, 24, 27, 0.85) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #f4f4f5 !important;
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 0.8) !important;
+  color: #0f172a !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
 }
 
-/* PENYESUAIAN WARNA TEKS DIBAGIAN DALAM CARD */
+/* KONTRAST TEKS TETAP TAJAM */
 .text-slate-900, .text-slate-800, .text-slate-700 {
-  color: #f4f4f5 !important;
+  color: #0f172a !important;
 }
 .text-slate-600, .text-slate-500 {
-  color: #a1a1aa !important;
-}
-.bg-slate-50, .bg-slate-100 {
-  background-color: rgba(39, 39, 42, 0.6) !important;
+  color: #475569 !important;
 }
 
 /* Print thermal receipt styling */
