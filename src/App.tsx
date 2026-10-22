@@ -13,6 +13,7 @@ import {
   ExpenseRecord,
   ShiftType
 } from './types';
+import { INITIAL_AUDIT_LOGS, INITIAL_CLOSINGS, INITIAL_EXPENSES } from './lib/mockData';
 import { db } from './lib/firebase';
 import {
   collection,
@@ -39,10 +40,56 @@ const dedupeById = <T extends { id: string }>(items: T[]): T[] => {
 function MainContent() {
   const { role, isAdmin, isCashier, userProfile, loading } = useAuth();
 
-  // Inisialisasi state sebagai array kosong (Firebase Firestore sebagai Single Source of Truth)
-  const [closings, setClosings] = useState<ClosingRecord[]>([]);
-  const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
-  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([]);
+  const [closings, setClosings] = useState<ClosingRecord[]>(() => {
+    const saved = localStorage.getItem('bukukas_closings');
+    if (saved) {
+      try {
+        const parsed: ClosingRecord[] = JSON.parse(saved);
+        if (parsed.some((c) => c.id && c.id.startsWith('cls_'))) {
+          localStorage.removeItem('bukukas_closings');
+          return [];
+        }
+        return dedupeById(parsed);
+      } catch (e) {
+        return [];
+      }
+    }
+    return INITIAL_CLOSINGS;
+  });
+
+  const [expenses, setExpenses] = useState<ExpenseRecord[]>(() => {
+    const saved = localStorage.getItem('bukukas_expenses');
+    if (saved) {
+      try {
+        const parsed: ExpenseRecord[] = JSON.parse(saved);
+        if (parsed.some((e) => e.id && e.id.startsWith('exp_'))) {
+          localStorage.removeItem('bukukas_expenses');
+          return [];
+        }
+        return dedupeById(parsed);
+      } catch (e) {
+        return [];
+      }
+    }
+    return INITIAL_EXPENSES;
+  });
+
+  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>(() => {
+    const saved = localStorage.getItem('bukukas_audit_logs');
+    if (saved) {
+      try {
+        const parsed: AuditLogRecord[] = JSON.parse(saved);
+        if (parsed.some((l) => l.id && l.id.startsWith('log_'))) {
+          localStorage.removeItem('bukukas_audit_logs');
+          return [];
+        }
+        return dedupeById(parsed);
+      } catch (e) {
+        return [];
+      }
+    }
+    return INITIAL_AUDIT_LOGS;
+  });
 
   const [adminTab, setAdminTab] = useState<'dashboard' | 'approvals' | 'expenses' | 'reports' | 'cashiers' | 'audit' | 'settings'>('dashboard');
   const pendingClosingsCount = closings.filter((c) => c.status === 'pending').length;
@@ -50,7 +97,7 @@ function MainContent() {
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
-  // Firestore Real-Time Sync (Realtime Listener)
+  // Firestore Real-Time Sync (Diperbaiki agar selalu update state dari Firebase)
   useEffect(() => {
     // 1. Closings Sync
     let unsubClosings = () => {};
@@ -66,18 +113,21 @@ function MainContent() {
           const map = new Map<string, ClosingRecord>();
           snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
           const list = Array.from(map.values());
-          setClosings(list);
-          localStorage.setItem('bukukas_closings', JSON.stringify(list));
+          // Update state walaupun list ada isinya dari Firebase
+          if (list.length > 0) {
+            setClosings(list);
+            localStorage.setItem('bukukas_closings', JSON.stringify(list));
+          }
         },
         (err) => {
-          console.warn('Firestore closings onSnapshot note:', err.message);
+          console.warn('Firestore closings note:', err.message);
         }
       );
     } catch (e) {
-      console.warn('Closings listener init failed.');
+      console.warn('Closings listener failed.');
     }
 
-    // 2. Expenses Sync (Admin)
+    // 2. Expenses Sync (Admin only)
     let unsubExpenses = () => {};
     if (isAdmin) {
       try {
@@ -88,19 +138,21 @@ function MainContent() {
             const map = new Map<string, ExpenseRecord>();
             snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
             const list = Array.from(map.values());
-            setExpenses(list);
-            localStorage.setItem('bukukas_expenses', JSON.stringify(list));
+            if (list.length > 0) {
+              setExpenses(list);
+              localStorage.setItem('bukukas_expenses', JSON.stringify(list));
+            }
           },
           (err) => {
-            console.warn('Firestore expenses onSnapshot note:', err.message);
+            console.warn('Firestore expenses note:', err.message);
           }
         );
       } catch (e) {
-        console.warn('Expenses listener init failed.');
+        console.warn('Expenses listener failed.');
       }
     }
 
-    // 3. Audit Logs Sync (Admin)
+    // 3. Audit Logs Sync (Admin only)
     let unsubAudit = () => {};
     if (isAdmin) {
       try {
@@ -113,15 +165,17 @@ function MainContent() {
             const list = Array.from(map.values()).sort(
               (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
             );
-            setAuditLogs(list);
-            localStorage.setItem('bukukas_audit_logs', JSON.stringify(list));
+            if (list.length > 0) {
+              setAuditLogs(list);
+              localStorage.setItem('bukukas_audit_logs', JSON.stringify(list));
+            }
           },
           (err) => {
-            console.warn('Firestore audit onSnapshot note:', err.message);
+            console.warn('Firestore audit note:', err.message);
           }
         );
       } catch (e) {
-        console.warn('Audit listener init failed.');
+        console.warn('Audit listener failed.');
       }
     }
 
