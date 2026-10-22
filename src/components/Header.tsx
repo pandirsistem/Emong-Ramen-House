@@ -195,7 +195,7 @@ export function Header({
                   className="fixed inset-0 z-40 bg-black/40"
                   onClick={() => setShowProfileMenu(false)}
                 />
-                <div className="absolute right-0 top-full mt-2 w-64 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2 z-50 animate-fade-in">
+                <div className="fixed right-3 top-16 w-72 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-3 z-50 animate-fade-in">
                   <div className="p-3 border-b border-slate-100 bg-amber-50/50 rounded-xl mb-2">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       Akun Aktif:
