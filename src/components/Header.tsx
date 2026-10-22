@@ -279,7 +279,7 @@ export function Header({
                     className="fixed inset-0 z-40 bg-black/40"
                     onClick={() => setShowNavMenu(false)}
                   />
-                  <div className="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-2.5 z-50 animate-fade-in space-y-1">
+                  <div className="fixed right-3 top-16 w-80 max-w-[calc(100vw-24px)] bg-white text-slate-900 rounded-2xl shadow-2xl border border-slate-200 p-3 z-50 animate-fade-in space-y-1">
                     <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-1 bg-amber-50/60 rounded-xl">
                       <div>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
