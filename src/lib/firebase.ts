@@ -31,7 +31,9 @@ export interface FirestoreErrorInfo {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// PERBAIKAN: Menggunakan Default Firestore Database agar sinkron dengan konsol
+export const db = getFirestore(app);
+
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -56,7 +58,6 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Validation connection to Firestore per skill requirements
 export async function testConnection(): Promise<boolean> {
   try {
     await getDocFromServer(doc(db, 'test', 'connection'));
@@ -69,7 +70,6 @@ export async function testConnection(): Promise<boolean> {
   }
 }
 
-// Create a new Cashier user in Firebase Auth without disrupting Admin's active session
 export async function createCashierInFirebaseAuth(email: string, pass: string, name: string): Promise<string> {
   const secondaryAppName = `SecApp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
@@ -88,4 +88,3 @@ export async function createCashierInFirebaseAuth(email: string, pass: string, n
     }
   }
 }
-
