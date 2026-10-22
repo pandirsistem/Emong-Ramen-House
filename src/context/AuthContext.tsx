@@ -17,7 +17,14 @@ import {
   onSnapshot,
   getDocFromServer
 } from 'firebase/firestore';
-import { auth, db, googleProvider, createCashierInFirebaseAuth, testConnection } from '../lib/firebase';
+import {
+  auth,
+  db,
+  googleProvider,
+  createCashierInFirebaseAuth,
+  testConnection,
+  cleanFirestoreData
+} from '../lib/firebase';
 import { AppSettings, AuditLogRecord, ShiftType, UserProfile, UserRole } from '../types';
 
 interface AuthContextType {
@@ -186,7 +193,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           // Bootstrap doc for user if missing
           if (!userDocExists) {
-            await setDoc(userDocRef, profile, { merge: true }).catch(() => {});
+            await setDoc(userDocRef, cleanFirestoreData(profile), { merge: true }).catch(() => {});
           }
 
           setCurrentUser(user);
@@ -298,13 +305,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleRevalidateFocus = async () => {
       if (document.visibilityState === 'visible' && currentUser && !isMasterAdmin) {
         try {
-          const freshSnap = await getDocFromServer(doc(db, 'users', currentUser.uid));
-          if (!freshSnap.exists() || freshSnap.data()?.isActive === false || freshSnap.data()?.status === 'disabled') {
-            await forceLogout('Akun Anda telah dinonaktifkan atau dihapus oleh Administrator.');
+          const snap = await getDoc(doc(db, 'users', currentUser.uid));
+          if (snap.exists()) {
+            const data = snap.data();
+            if (data?.isActive === false || data?.status === 'disabled' || data?.isDeleted === true) {
+              await forceLogout('Akun kasir Anda telah dinonaktifkan oleh Administrator.');
+            }
           }
-        } catch {
-          // If Firestore permission denied due to rules blocking disabled account, force logout
-          await forceLogout('Sesi akun tidak valid atau telah dicabut.');
+        } catch (err: any) {
+          // Only force logout if explicitly revoked via security rules, never on network error
+          if (err?.code === 'permission-denied') {
+            await forceLogout('Sesi akun tidak valid atau telah dicabut.');
+          }
         }
       }
     };
@@ -515,7 +527,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       status: 'active',
       createdAt: new Date().toISOString()
     };
-    await setDoc(doc(db, 'users', uid), newCashierProfile);
+    await setDoc(doc(db, 'users', uid), cleanFirestoreData(newCashierProfile));
 
     await logAuditAction(
       'TAMBAH_KASIR',
@@ -531,27 +543,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // 1. Immediately flag document as disabled / deleted so real-time listener terminates cashier session
     try {
-      await updateDoc(doc(db, 'users', cashierId), {
+      await updateDoc(doc(db, 'users', cashierId), cleanFirestoreData({
         isActive: false,
         status: 'disabled',
         deletedAt: new Date().toISOString()
-      });
+      }));
     } catch {
-      await setDoc(doc(db, 'users', cashierId), {
+      await setDoc(doc(db, 'users', cashierId), cleanFirestoreData({
         isActive: false,
         status: 'disabled',
         deletedAt: new Date().toISOString()
-      }, { merge: true });
+      }), { merge: true });
     }
 
     // 2. Mark in revoked_users collection for Admin SDK revocation scripts
     try {
-      await setDoc(doc(db, 'revoked_users', cashierId), {
+      await setDoc(doc(db, 'revoked_users', cashierId), cleanFirestoreData({
         userId: cashierId,
         userName: cashierName,
         revokedAt: new Date().toISOString(),
         reason: 'Admin deleted cashier account'
-      }, { merge: true });
+      }), { merge: true });
     } catch (e) {
       console.warn('Revoked users write note:', e);
     }
@@ -571,12 +583,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       throw new Error('Hanya Admin yang berhak mengubah status akun kasir.');
     }
 
-    await setDoc(doc(db, 'users', cashierId), {
+    await setDoc(doc(db, 'users', cashierId), cleanFirestoreData({
       isActive,
       status: isActive ? 'active' : 'disabled',
       disabledAt: isActive ? null : new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    }, { merge: true });
+    }), { merge: true });
 
     if (!isActive) {
       try {

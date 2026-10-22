@@ -86,7 +86,7 @@ export function Header({
 
           <div className="min-w-0 flex-1 my-auto">
             <div className="flex items-center gap-1 sm:gap-1.5 leading-none">
-              <h1 className="font-extrabold text-white text-xs sm:text-base tracking-tight whitespace-nowrap uppercase m-0 leading-none">
+              <h1 className="font-extrabold text-white text-xs sm:text-base tracking-tight truncate uppercase m-0 leading-none max-w-[120px] xs:max-w-[160px] sm:max-w-none">
                 {settings.businessName || 'EMONG RAMEN HOUSE'}
               </h1>
               <span className="hidden sm:inline-block text-[9px] font-black px-1.5 py-0.5 rounded-xs bg-amber-500 text-slate-950 tracking-wider uppercase shrink-0">

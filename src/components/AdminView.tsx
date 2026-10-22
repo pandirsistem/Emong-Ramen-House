@@ -36,7 +36,8 @@ import {
   LogOut,
   UserX,
   UserCheck,
-  Shield
+  Shield,
+  FileSpreadsheet
 } from 'lucide-react';
 import {
   BarChart,
@@ -570,13 +571,13 @@ export function AdminView({
               className="text-[10px] sm:text-xs text-purple-700 hover:text-purple-900 font-semibold bg-purple-50 hover:bg-purple-100 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg border border-purple-200 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
               title="Reset Filter Tanggal"
             >
-              ✕ <span className="hidden xs:inline">Reset</span>
+              ✕ <span>Reset</span>
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          <div className="hidden xl:flex items-center gap-1.5 text-xs text-slate-500 font-medium">
             <span className="px-2 py-1 rounded-lg bg-slate-100 text-slate-700">
               📊 {rangeClosings.length} Setoran
             </span>
@@ -584,6 +585,20 @@ export function AdminView({
               🛒 {rangeExpenses.length} Belanja
             </span>
           </div>
+
+          {/* Direct Google Sheets Link in Admin Filter Bar */}
+          {settings.spreadsheetUrl && (
+            <a
+              href={settings.spreadsheetUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs active:scale-95 shrink-0"
+              title="Buka Spreadsheet Google Sheets Toko"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5" />
+              <span>Sheets</span>
+            </a>
+          )}
 
           {/* Download Excel (.xlsx) button */}
           <button
@@ -593,9 +608,7 @@ export function AdminView({
             title="Tentukan periode tanggal dan unduh file Excel (.xlsx)"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="hidden xs:inline">Unduh Excel</span>
-            <span className="xs:hidden">Excel</span>
-            <Calendar className="w-3 h-3 opacity-85 ml-0.5" />
+            <span className="font-bold">Unduh Excel</span>
           </button>
         </div>
       </div>

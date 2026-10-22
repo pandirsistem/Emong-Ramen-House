@@ -197,8 +197,8 @@ export function CashierView({ onOpenVoice, closings, onAddClosing }: CashierView
                 className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 sm:px-3.5 sm:py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-md transition-all active:scale-95 shrink-0"
                 title="Buka Google Sheets"
               >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-slate-950" />
-                <span className="hidden xs:inline">Sheets</span>
+                <FileSpreadsheet className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                <span>Sheets</span>
               </a>
             )}
 
@@ -208,8 +208,8 @@ export function CashierView({ onOpenVoice, closings, onAddClosing }: CashierView
               className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-blue-900 hover:bg-blue-50 font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-md transition-all active:scale-95 shrink-0 cursor-pointer"
               title="Isi formulir otomatis menggunakan perintah suara AI"
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
-              <span className="hidden xs:inline">Voice AI</span>
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin shrink-0" />
+              <span>Voice AI</span>
             </button>
           </div>
         </div>
