@@ -31,8 +31,8 @@ export interface FirestoreErrorInfo {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// PERBAIKAN: Menggunakan Default Firestore Database agar sinkron dengan konsol
-export const db = getFirestore(app);
+// Menggunakan database ID khusus sesuai konfigurasi proyek Anda
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
