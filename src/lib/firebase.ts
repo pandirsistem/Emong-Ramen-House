@@ -8,7 +8,7 @@ export enum OperationType {
   UPDATE = 'update',
   DELETE = 'delete',
   LIST = 'list',
-  GET = 'GET',
+  GET = 'get',
   WRITE = 'write',
 }
 
@@ -31,9 +31,7 @@ export interface FirestoreErrorInfo {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Inisialisasi Firestore Database
 export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
-
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
