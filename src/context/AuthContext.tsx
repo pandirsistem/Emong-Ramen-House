@@ -257,30 +257,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Auto-bootstrap requested cashier Risma if not created in Firebase Auth yet
-    if (
-      !loggedIn &&
-      (raw === 'risma' || raw === 'risma@ramenhouse' || raw === 'risma@ramenhouse.com' || raw === 'risma@emongramen.com') &&
-      pass === 'risma123'
-    ) {
-      try {
-        const cashierEmail = raw.includes('@') ? (raw.includes('.') ? raw : `${raw}.com`) : 'risma@emongramen.com';
-        const res = await createUserWithEmailAndPassword(auth, cashierEmail, pass);
-        await updateProfile(res.user, { displayName: 'Risma' });
-        await setDoc(doc(db, 'users', res.user.uid), {
-          id: res.user.uid,
-          email: cashierEmail,
-          displayName: 'Risma',
-          role: 'cashier',
-          shift: 'Pagi',
-          passwordHint: 'risma123',
-          isActive: true,
-          createdAt: new Date().toISOString()
-        }, { merge: true });
-        loggedIn = true;
-      } catch (rismaCreateErr) {
-        console.warn('Auto-bootstrap cashier Risma error:', rismaCreateErr);
-      }
-    }
+    
 
     if (!loggedIn) {
       console.warn('Login attempt failed for identifier:', identifier);
