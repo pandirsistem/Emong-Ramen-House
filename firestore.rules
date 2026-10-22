@@ -8,24 +8,18 @@ service cloud.firestore {
     }
 
     function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+      return id is string && id.size() > 0 && id.size() <= 128;
     }
 
     function isAdmin() {
       return isSignedIn() && (
-        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
         request.auth.token.email == 'pandircmss@gmail.com' ||
         request.auth.token.email == 'firman@emongramen.com' ||
         request.auth.token.email.matches('(?i).*admin.*') ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
       );
-    }
-
-    function isCashierActive() {
-      return !exists(/databases/$(database)/documents/users/$(request.auth.uid)) ||
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isActive != false &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status != 'disabled');
     }
 
     // Default deny
@@ -33,10 +27,15 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Health check / connection test doc
+    match /test/{docId} {
+      allow read: if true;
+    }
+
     // Admins marker collection
     match /admins/{userId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && isValidId(userId) && (
+      allow write: if isSignedIn() && (
         request.auth.token.email == 'pandircmss@gmail.com' ||
         request.auth.token.email == 'firman@emongramen.com' ||
         request.auth.token.email.matches('(?i).*admin.*') ||
@@ -46,35 +45,28 @@ service cloud.firestore {
 
     // Users profile collection
     match /users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create: if isSignedIn() && isValidId(userId) && (
-        request.auth.uid == userId || isAdmin()
-      );
-      allow update: if isSignedIn() && (
-        isAdmin() ||
-        (request.auth.uid == userId && resource.data.isActive != false && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isActive', 'status']))
-      );
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (isAdmin() || request.auth.uid == userId);
       allow delete: if isAdmin();
     }
 
-    // Revoked users blacklist / audit marker
+    // Revoked users
     match /revoked_users/{userId} {
       allow read, write: if isAdmin();
     }
 
     // Closings collection (Uang Masuk / Closing Shift)
     match /closings/{closingId} {
-      // All authenticated and active users can read closings so all devices (HP & PC) have matching real-time data
-      allow read: if isSignedIn() && isCashierActive();
+      // All logged in users (admin & cashiers) can read closings so all devices have identical realtime state
+      allow read: if isSignedIn();
 
-      // Active cashiers and admins can create closing records
-      allow create: if isSignedIn() && isValidId(closingId) && isCashierActive() && (
-        request.resource.data.status in ['pending', 'approved']
-      );
+      // Authenticated users can create closing records
+      allow create: if isSignedIn() && isValidId(closingId);
 
-      // Admin or closing creator can update (review, approve, reject, notes)
-      allow update: if isSignedIn() && isCashierActive() && (
+      // Admin or closing creator can update (review, notes, etc.)
+      allow update: if isSignedIn() && (
         isAdmin() ||
         resource.data.cashierId == request.auth.uid
       );
@@ -85,17 +77,17 @@ service cloud.firestore {
 
     // Expenses collection (Pengeluaran Operasional)
     match /expenses/{expenseId} {
-      // All authenticated and active users can read expenses so total balance and expense records sync across all devices
-      allow read: if isSignedIn() && isCashierActive();
+      // All logged in users can read expenses so balance is identical across PC & HP
+      allow read: if isSignedIn();
 
-      // Admin and active staff can create expenses
-      allow create: if isSignedIn() && isValidId(expenseId) && isCashierActive();
+      // Admin or staff can create expenses
+      allow create: if isSignedIn() && isValidId(expenseId);
 
       // Admin can update or delete expenses
       allow update, delete: if isAdmin();
     }
 
-    // Audit logs collection (Catatan Aktivitas / Pengawasan)
+    // Audit logs collection
     match /audit_logs/{logId} {
       allow create: if isSignedIn() && isValidId(logId);
       allow read: if isSignedIn();
@@ -105,11 +97,7 @@ service cloud.firestore {
     // Settings collection
     match /settings/{settingId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && (
-        isAdmin() ||
-        request.auth.token.email == 'firman@emongramen.com' ||
-        request.auth.token.email == 'pandircmss@gmail.com'
-      );
+      allow write: if isSignedIn();
     }
   }
 }

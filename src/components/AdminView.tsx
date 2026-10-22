@@ -66,6 +66,7 @@ import { exportTransactionsToCSV, exportTransactionsToXLSX } from '../lib/export
 import { ReceiptModal } from './ReceiptModal';
 import { formatCurrency, parseCurrency } from '../lib/formatters';
 import { ExportModal } from './ExportModal';
+import { compressImage } from '../lib/imageCompressor';
 
 interface AdminViewProps {
   onOpenVoice: () => void;
@@ -336,14 +337,20 @@ export function AdminView({
   }, [rangeExpenses]);
 
   // Handle Photo upload for receipt
-  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      setExpenseReceiptPhoto(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      const compressed = await compressImage(file);
+      setExpenseReceiptPhoto(compressed);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setExpenseReceiptPhoto(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Add Expense Handler
@@ -354,16 +361,19 @@ export function AdminView({
 
     setIsSubmittingExpense(true);
     try {
-      const newExpense = await onAddExpense({
+      const expensePayload: any = {
         date: expenseDate,
         category: expenseCategory,
         amount: amountNum,
         title: expenseTitle.trim(),
         notes: expenseNotes.trim(),
-        receiptPhotoUrl: expenseReceiptPhoto || undefined,
         recordedBy: userProfile?.id || 'admin',
         recordedByName: userProfile?.displayName || 'Admin Utama',
-      });
+      };
+      if (expenseReceiptPhoto) {
+        expensePayload.receiptPhotoUrl = expenseReceiptPhoto;
+      }
+      const newExpense = await onAddExpense(expensePayload);
 
       // Send to Google Sheets Webhook
       if (settings.webhookUrl) {
@@ -594,70 +604,70 @@ export function AdminView({
       {activeTab === 'dashboard' && (<>
         <div className="space-y-4 sm:space-y-6 animate-fade-in">
           {/* 4 Summary Stat Cards */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {/* Saldo Bersih */}
-            <div className="bg-white p-2 rounded-lg border border-slate-200/90 shadow-xs flex flex-col justify-between min-h-[64px]">
-              <div className="flex items-center justify-between gap-0.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">
+            <div className="bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between min-h-[72px] sm:min-h-[84px]">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">
                   Saldo Bersih
                 </span>
-                <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ${totalCashBalance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
-                  <DollarSign className="w-3 h-3" />
+                <div className={`w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center shrink-0 ${totalCashBalance >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                  <DollarSign className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-0.5">
-                <h3 className="text-[11px] font-black text-slate-900 truncate tracking-tight">
+              <div className="mt-1">
+                <h3 className="text-xs sm:text-base md:text-lg font-black text-slate-900 truncate tracking-tight">
                   Rp {totalCashBalance.toLocaleString('id-ID')}
                 </h3>
               </div>
             </div>
 
             {/* Total Pemasukan Approved */}
-            <div className="bg-white p-2 rounded-lg border border-slate-200/90 shadow-xs flex flex-col justify-between min-h-[64px]">
-              <div className="flex items-center justify-between gap-0.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">
+            <div className="bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between min-h-[72px] sm:min-h-[84px]">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">
                   Total Masuk
                 </span>
-                <div className="w-5 h-5 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                  <TrendingUp className="w-3 h-3" />
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-0.5">
-                <h3 className="text-[11px] font-black text-blue-900 truncate tracking-tight">
+              <div className="mt-1">
+                <h3 className="text-xs sm:text-base md:text-lg font-black text-blue-900 truncate tracking-tight">
                   Rp {totalIncomeApproved.toLocaleString('id-ID')}
                 </h3>
               </div>
             </div>
 
             {/* Total Pengeluaran */}
-            <div className="bg-white p-2 rounded-lg border border-slate-200/90 shadow-xs flex flex-col justify-between min-h-[64px]">
-              <div className="flex items-center justify-between gap-0.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 truncate">
+            <div className="bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between min-h-[72px] sm:min-h-[84px]">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 truncate">
                   Pengeluaran
                 </span>
-                <div className="w-5 h-5 rounded-md bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
-                  <TrendingDown className="w-3 h-3" />
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+                  <TrendingDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-0.5">
-                <h3 className="text-[11px] font-black text-rose-900 truncate tracking-tight">
+              <div className="mt-1">
+                <h3 className="text-xs sm:text-base md:text-lg font-black text-rose-900 truncate tracking-tight">
                   Rp {totalExpense.toLocaleString('id-ID')}
                 </h3>
               </div>
             </div>
 
             {/* Setoran Kasir Pending */}
-            <div className="bg-white p-2 rounded-lg border border-amber-200 bg-amber-50/25 shadow-xs flex flex-col justify-between min-h-[64px]">
-              <div className="flex items-center justify-between gap-0.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-amber-800 truncate">
+            <div className="bg-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-amber-200 bg-amber-50/25 shadow-xs flex flex-col justify-between min-h-[72px] sm:min-h-[84px]">
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-amber-800 truncate">
                   Pending
                 </span>
-                <div className="w-5 h-5 rounded-md bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                  <Clock className="w-3 h-3" />
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
+                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
               </div>
-              <div className="mt-0.5">
-                <h3 className="text-[11px] font-black text-amber-900 truncate tracking-tight">
+              <div className="mt-1">
+                <h3 className="text-xs sm:text-base md:text-lg font-black text-amber-900 truncate tracking-tight">
                   Rp {totalPendingAmount.toLocaleString('id-ID')}
                 </h3>
               </div>

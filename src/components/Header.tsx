@@ -34,6 +34,7 @@ interface HeaderProps {
   pendingClosingsCount?: number;
   closings?: ClosingRecord[];
   expenses?: ExpenseRecord[];
+  isOnline?: boolean;
 }
 
 export function Header({
@@ -43,7 +44,8 @@ export function Header({
   setActiveTab,
   pendingClosingsCount = 0,
   closings = [],
-  expenses = []
+  expenses = [],
+  isOnline = true
 }: HeaderProps) {
   const { userProfile, role, isAdmin, logout, settings } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -90,6 +92,17 @@ export function Header({
               <span className="hidden sm:inline-block text-[9px] font-black px-1.5 py-0.5 rounded-xs bg-amber-500 text-slate-950 tracking-wider uppercase shrink-0">
                 POS
               </span>
+              <span
+                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                  isOnline
+                    ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40'
+                    : 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
+                }`}
+                title={isOnline ? 'Terhubung Real-Time ke Firebase Firestore' : 'Mode Offline - Data tersimpan lokal & sinkron otomatis saat online'}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                <span className="hidden sm:inline">{isOnline ? 'Cloud Realtime' : 'Offline'}</span>
+              </span>
             </div>
             <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-amber-200/80 truncate leading-tight mt-0.5">
               <span className="truncate">{settings.tagline || 'System Kasir & Manajemen'}</span>
@@ -122,20 +135,18 @@ export function Header({
             <span className="hidden md:inline text-amber-100">Voice AI</span>
           </button>
 
-          {/* ADMIN ONLY: Google Sheets Direct Hyperlink & Sync */}
-          {isAdmin && (
-            <button
-              type="button"
-              onClick={handleGoogleSheetsClick}
-              disabled={isExporting}
-              className="hidden md:inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-red-950/60 hover:bg-red-900/80 border border-rose-800/50 text-amber-200 text-xs font-semibold transition-colors min-h-[36px] cursor-pointer disabled:opacity-50"
-              title="Sinkronkan Data ke Google Sheets & Buka Spreadsheet"
-            >
-              <FileSpreadsheet className={`w-3.5 h-3.5 text-amber-400 ${isExporting ? 'animate-spin' : ''}`} />
-              <span className="hidden lg:inline">{isExporting ? 'Syncing...' : 'Google Sheets'}</span>
-              <ExternalLink className="w-2.5 h-2.5 text-amber-300 ml-0.5" />
-            </button>
-          )}
+          {/* GOOGLE SHEETS BUTTON - Prominently Visible on Mobile (HP) and Desktop */}
+          <button
+            type="button"
+            onClick={handleGoogleSheetsClick}
+            disabled={isExporting}
+            className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-400/40 text-[11px] sm:text-xs font-bold transition-all min-h-[34px] sm:min-h-[36px] cursor-pointer disabled:opacity-50 active:scale-95 shadow-sm shrink-0"
+            title="Buka Spreadsheet Google Sheets & Sinkronkan Data"
+          >
+            <FileSpreadsheet className={`w-3.5 h-3.5 text-emerald-100 shrink-0 ${isExporting ? 'animate-spin' : ''}`} />
+            <span className="font-extrabold whitespace-nowrap">{isExporting ? 'Sync...' : 'Sheets'}</span>
+            <ExternalLink className="w-2.5 h-2.5 text-emerald-200 hidden sm:inline" />
+          </button>
 
           {/* Setup Guide Button */}
           {isAdmin && (
@@ -321,7 +332,21 @@ export function Header({
                       );
                     })}
 
-                    <div className="pt-2 mt-1 border-t border-slate-100">
+                    <div className="pt-2 mt-1 border-t border-slate-100 space-y-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNavMenu(false);
+                          handleGoogleSheetsClick();
+                        }}
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-all cursor-pointer border border-emerald-200"
+                      >
+                        <div className="flex items-center gap-2">
+                          <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                          <span>Buka Google Sheets</span>
+                        </div>
+                        <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => {

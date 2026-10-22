@@ -15,7 +15,8 @@ import {
   ShieldAlert,
   FileCheck,
   ChevronRight,
-  Printer
+  Printer,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ClosingRecord, ShiftType } from '../types';
@@ -23,6 +24,7 @@ import { createWhatsAppNotificationUrl, sendToGoogleSheetsWebhook } from '../lib
 import confetti from 'canvas-confetti';
 import { ReceiptModal } from './ReceiptModal';
 import { formatCurrency, parseCurrency } from '../lib/formatters';
+import { compressImage } from '../lib/imageCompressor';
 
 interface CashierViewProps {
   onOpenVoice: () => void;
@@ -84,15 +86,20 @@ export function CashierView({ onOpenVoice, closings, onAddClosing }: CashierView
   // Filter only TODAY's closings submitted by cashier
   const todayClosings = closings.filter((c) => c.date === todayStr);
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPhotoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImage(file);
+      setPhotoPreview(compressed);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -102,7 +109,7 @@ export function CashierView({ onOpenVoice, closings, onAddClosing }: CashierView
     setIsSubmitting(true);
     try {
       const activeCashierName = userProfile?.displayName?.trim() || userProfile?.email?.split('@')[0] || 'Emong Kasir';
-      const newRecord = await onAddClosing({
+      const closingPayload: any = {
         date: todayStr, // strictly same-day
         cashierId: userProfile?.id || 'cashier-unknown',
         cashierName: activeCashierName,
@@ -113,8 +120,11 @@ export function CashierView({ onOpenVoice, closings, onAddClosing }: CashierView
         discrepancyAmount: discrepancy,
         discrepancyReason: hasDiscrepancy ? discrepancyReason.trim() : '',
         notes: notes.trim(),
-        proofPhotoUrl: photoPreview || undefined,
-      });
+      };
+      if (photoPreview) {
+        closingPayload.proofPhotoUrl = photoPreview;
+      }
+      const newRecord = await onAddClosing(closingPayload);
 
       // Trigger celebrate confetti
       confetti({
@@ -178,15 +188,30 @@ export function CashierView({ onOpenVoice, closings, onAddClosing }: CashierView
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onOpenVoice}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-blue-900 hover:bg-blue-50 font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-md transition-all active:scale-95 shrink-0 cursor-pointer"
-            title="Isi formulir otomatis menggunakan perintah suara AI"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
-            <span className="hidden xs:inline">Voice AI</span>
-          </button>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {settings.spreadsheetUrl && (
+              <a
+                href={settings.spreadsheetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 sm:px-3.5 sm:py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-md transition-all active:scale-95 shrink-0"
+                title="Buka Google Sheets"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-slate-950" />
+                <span className="hidden xs:inline">Sheets</span>
+              </a>
+            )}
+
+            <button
+              type="button"
+              onClick={onOpenVoice}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2.5 bg-white text-blue-900 hover:bg-blue-50 font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-md transition-all active:scale-95 shrink-0 cursor-pointer"
+              title="Isi formulir otomatis menggunakan perintah suara AI"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+              <span className="hidden xs:inline">Voice AI</span>
+            </button>
+          </div>
         </div>
 
         {/* Strict restriction notice for transparency */}

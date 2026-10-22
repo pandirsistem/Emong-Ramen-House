@@ -13,7 +13,7 @@ import {
   ExpenseRecord,
   ShiftType
 } from './types';
-import { db } from './lib/firebase';
+import { db, cleanFirestoreData } from './lib/firebase';
 import {
   collection,
   onSnapshot,
@@ -84,6 +84,19 @@ function MainContent() {
 
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
+
+  // Monitor network connectivity state
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Firestore Real-Time Sync (Live listener across PC & HP devices without manual refresh)
   useEffect(() => {
@@ -98,25 +111,6 @@ function MainContent() {
         (snap) => {
           const map = new Map<string, ClosingRecord>();
           snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-          const list = Array.from(map.values()).sort(
-            (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
-          );
-
-          // If local storage has items not yet on the server (e.g. from previous offline/sync attempt),
-          // recover and push them to Firestore so data is never lost
-          try {
-            const saved = localStorage.getItem('bukukas_closings');
-            if (saved) {
-              const localList: ClosingRecord[] = JSON.parse(saved);
-              localList.forEach((localItem) => {
-                if (localItem && localItem.id && !map.has(localItem.id)) {
-                  map.set(localItem.id, localItem);
-                  setDoc(doc(db, 'closings', localItem.id), localItem).catch(() => {});
-                }
-              });
-            }
-          } catch {}
-
           const fullList = Array.from(map.values()).sort(
             (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
           );
@@ -142,21 +136,6 @@ function MainContent() {
         (snap) => {
           const map = new Map<string, ExpenseRecord>();
           snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-          
-          // Recover unsynced local expenses if any
-          try {
-            const saved = localStorage.getItem('bukukas_expenses');
-            if (saved) {
-              const localList: ExpenseRecord[] = JSON.parse(saved);
-              localList.forEach((localItem) => {
-                if (localItem && localItem.id && !map.has(localItem.id)) {
-                  map.set(localItem.id, localItem);
-                  setDoc(doc(db, 'expenses', localItem.id), localItem).catch(() => {});
-                }
-              });
-            }
-          } catch {}
-
           const fullList = Array.from(map.values()).sort(
             (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
           );
@@ -207,11 +186,42 @@ function MainContent() {
     };
   }, [isAdmin, userProfile?.id]);
 
-  if (loading) {
+  // Fast Async Skeleton Loader for Snappy Initial Feel
+  if (loading && !userProfile) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-[#1e0a0f] text-white">
-        <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="font-bold text-sm tracking-wide text-amber-200">Memuat Sistem Keuangan...</p>
+      <div className="min-h-screen bg-[#1e0a0f] text-slate-100 antialiased p-3 sm:p-6 space-y-4 animate-pulse">
+        {/* Shimmering Top Bar Skeleton */}
+        <div className="h-14 bg-rose-950/40 rounded-2xl border border-rose-900/30 flex items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/20" />
+            <div className="space-y-1.5">
+              <div className="w-32 h-3.5 bg-rose-800/40 rounded-md" />
+              <div className="w-20 h-2.5 bg-rose-900/40 rounded-md" />
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <div className="w-16 h-8 bg-emerald-800/30 rounded-xl" />
+            <div className="w-8 h-8 bg-rose-800/30 rounded-xl" />
+          </div>
+        </div>
+
+        {/* 4 Shimmering Metric Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-20 bg-rose-950/30 rounded-xl border border-rose-900/20 p-3 flex flex-col justify-between">
+              <div className="w-16 h-2.5 bg-rose-800/30 rounded-md" />
+              <div className="w-24 h-5 bg-amber-500/20 rounded-md" />
+            </div>
+          ))}
+        </div>
+
+        {/* Main Content Area Skeleton */}
+        <div className="h-64 bg-rose-950/20 rounded-2xl border border-rose-900/20 p-4 space-y-3">
+          <div className="w-40 h-4 bg-rose-800/30 rounded-md" />
+          <div className="h-10 bg-rose-900/20 rounded-xl" />
+          <div className="h-10 bg-rose-900/20 rounded-xl" />
+          <div className="h-10 bg-rose-900/20 rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -255,7 +265,7 @@ function MainContent() {
 
     // Real-Time Cloud Save to Firestore (persists on refresh and syncs to all devices)
     try {
-      await setDoc(doc(db, 'closings', id), newClosing);
+      await setDoc(doc(db, 'closings', id), cleanFirestoreData(newClosing));
     } catch (err: any) {
       console.error('Firestore save closing error:', err);
       // Fallback: save to local cache
@@ -290,7 +300,7 @@ function MainContent() {
 
     // Real-Time Cloud Save to Firestore (persists on refresh and syncs to all devices)
     try {
-      await setDoc(doc(db, 'expenses', id), newExpense);
+      await setDoc(doc(db, 'expenses', id), cleanFirestoreData(newExpense));
     } catch (err: any) {
       console.error('Firestore save expense error:', err);
       // Fallback: save to local cache
@@ -309,9 +319,9 @@ function MainContent() {
     status: 'approved' | 'rejected',
     reviewNotes: string
   ) => {
-    const updateData = {
+    const updateData: any = {
       status,
-      reviewNotes,
+      reviewNotes: reviewNotes || '',
       reviewedBy: userProfile?.id || 'admin',
       reviewedByName: userProfile?.displayName || 'Admin Utama',
       reviewedAt: new Date().toISOString(),
@@ -329,7 +339,7 @@ function MainContent() {
 
     // Real-Time Cloud Update
     try {
-      await updateDoc(doc(db, 'closings', id), updateData);
+      await updateDoc(doc(db, 'closings', id), cleanFirestoreData(updateData));
     } catch (err) {
       console.error('Firestore update closing error:', err);
     }
@@ -407,6 +417,7 @@ function MainContent() {
         pendingClosingsCount={pendingClosingsCount}
         closings={closings}
         expenses={expenses}
+        isOnline={isOnline}
       />
 
       {/* Main View Area based on Strict RBAC */}

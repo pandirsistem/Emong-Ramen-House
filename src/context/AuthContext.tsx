@@ -58,8 +58,22 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => {
+    try {
+      const cached = localStorage.getItem('emong_user_profile');
+      return cached ? JSON.parse(cached) : null;
+    } catch {
+      return null;
+    }
+  });
+  // If user profile is already cached locally, open immediately without blocking
+  const [loading, setLoading] = useState<boolean>(() => {
+    try {
+      return !localStorage.getItem('emong_user_profile');
+    } catch {
+      return false;
+    }
+  });
   const [firebaseOnline, setFirebaseOnline] = useState<boolean>(true);
   const [authSecurityError, setAuthSecurityError] = useState<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -79,6 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.warn('Sign out warning during force logout:', err);
     }
     // Clean all session & transaction caches
+    localStorage.removeItem('emong_user_profile');
     localStorage.removeItem('bukukas_closings');
     localStorage.removeItem('bukukas_expenses');
     sessionStorage.clear();
@@ -92,11 +107,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Track Firebase connection and initial auth state
   useEffect(() => {
+    // Fast safety timer: maximum 500ms on initial boot screen to prevent slow loading
+    const bootTimer = setTimeout(() => {
+      setLoading(false);
+    }, 500);
+
     testConnection().then((connected) => {
       setFirebaseOnline(connected);
     });
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
+      clearTimeout(bootTimer);
       if (user) {
         try {
           const email = (user.email || '').toLowerCase();
@@ -106,27 +127,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email.startsWith('admin');
 
           const userDocRef = doc(db, 'users', user.uid);
-          const userSnap = await getDoc(userDocRef);
-
-          // SECURITY CHECK: If user document was deleted from Firestore and not master admin -> REVOKE SESSION
-          if (!userSnap.exists()) {
-            if (!isMasterAdmin) {
-              console.warn(`User ${user.uid} (${email}) has no profile document in Firestore. Revoking session.`);
-              await signOut(auth);
-              setCurrentUser(null);
-              setUserProfile(null);
-              setAuthSecurityError('Akun Anda tidak lagi terdaftar atau telah dihapus oleh Administrator.');
-              setLoading(false);
-              return;
-            }
+          
+          let userDbData: any = null;
+          let userDocExists = false;
+          try {
+            const userSnap = await getDoc(userDocRef);
+            userDocExists = userSnap.exists();
+            userDbData = userDocExists ? userSnap.data() : null;
+          } catch (fetchErr) {
+            console.warn('Firestore doc read note (using cached/fallback):', fetchErr);
           }
 
-          const userDbData = userSnap.exists() ? userSnap.data() : null;
-
-          // SECURITY CHECK: If account is soft-deleted or marked inactive/disabled -> REVOKE SESSION
+          // If disabled by admin -> revoke
           if (!isMasterAdmin && userDbData && (userDbData.isActive === false || userDbData.status === 'disabled' || userDbData.isDeleted === true)) {
             console.warn(`User ${user.uid} (${email}) status is disabled. Revoking session.`);
             await signOut(auth);
+            localStorage.removeItem('emong_user_profile');
             setCurrentUser(null);
             setUserProfile(null);
             setAuthSecurityError('Akun kasir Anda telah dinonaktifkan oleh Administrator. Akses ditolak.');
@@ -145,8 +161,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             } catch (e) {
               console.warn('Could not write admin marker:', e);
             }
-          } else if (userSnap.exists()) {
-            role = userSnap.data()?.role || 'cashier';
+          } else if (userDbData) {
+            role = userDbData.role || 'cashier';
           }
 
           const resolvedDisplayName =
@@ -168,34 +184,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             createdAt: userDbData?.createdAt || new Date().toISOString()
           };
 
-          // Only bootstrap doc for master admin, NEVER auto-recreate missing cashier accounts
-          if (!userSnap.exists() && isMasterAdmin) {
-            await setDoc(userDocRef, profile, { merge: true });
+          // Bootstrap doc for user if missing
+          if (!userDocExists) {
+            await setDoc(userDocRef, profile, { merge: true }).catch(() => {});
           }
 
           setCurrentUser(user);
           setUserProfile(profile);
+          try {
+            localStorage.setItem('emong_user_profile', JSON.stringify(profile));
+          } catch {}
           setLoading(false);
         } catch (err) {
-          console.warn('Failed to verify user profile from Firestore:', err);
+          console.warn('User profile hydration note:', err);
           const email = (user.email || '').toLowerCase();
           const isMasterAdmin = email === 'firman@emongramen.com' || email === 'pandircmss@gmail.com';
-          if (isMasterAdmin) {
+          if (isMasterAdmin || userProfile) {
             setCurrentUser(user);
-            setUserProfile({
-              id: user.uid,
-              email: user.email || 'firman@emongramen.com',
-              displayName: user.displayName || 'Firman (Admin Utama)',
-              role: 'admin',
-              isActive: true,
-              status: 'active',
-              createdAt: new Date().toISOString()
-            });
-          } else {
-            await signOut(auth);
-            setCurrentUser(null);
-            setUserProfile(null);
-            setAuthSecurityError('Terjadi kesalahan saat memverifikasi status akun Anda.');
+            if (!userProfile) {
+              const fallbackAdminProfile: UserProfile = {
+                id: user.uid,
+                email: user.email || 'firman@emongramen.com',
+                displayName: user.displayName || 'Firman (Admin Utama)',
+                role: 'admin',
+                isActive: true,
+                status: 'active',
+                createdAt: new Date().toISOString()
+              };
+              setUserProfile(fallbackAdminProfile);
+              localStorage.setItem('emong_user_profile', JSON.stringify(fallbackAdminProfile));
+            }
           }
           setLoading(false);
         }
@@ -203,6 +221,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // No Firebase user signed in
         setCurrentUser(null);
         setUserProfile(null);
+        localStorage.removeItem('emong_user_profile');
         setLoading(false);
       }
     });
@@ -582,6 +601,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (currentUser) {
         await signOut(auth);
       }
+      localStorage.removeItem('emong_user_profile');
       localStorage.removeItem('bukukas_closings');
       localStorage.removeItem('bukukas_expenses');
       sessionStorage.clear();
