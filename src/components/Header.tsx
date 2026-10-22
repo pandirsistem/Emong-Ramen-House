@@ -132,7 +132,7 @@ export function Header({
             title="Buka Input Suara AI"
           >
             <Mic className="w-3.5 h-3.5 text-amber-300 shrink-0 animate-pulse" />
-            <span className="hidden md:inline text-amber-100">Voice AI</span>
+            <span className="hidden md:inline text-amber-100">Voice</span>
           </button>
 
           {/* GOOGLE SHEETS BUTTON - Prominently Visible on Mobile (HP) and Desktop */}

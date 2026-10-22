@@ -132,7 +132,7 @@ service cloud.firestore {
             onClick={() => setActiveTab('voice')}
             className={`py-3 px-3.5 text-xs font-semibold flex items-center gap-2 border-b-2 transition-colors whitespace-nowrap ${
               activeTab === 'voice'
-                ? 'border-purple-600 text-purple-700 bg-purple-50/50'
+                ? 'border-rose-600 text-rose-700 bg-rose-50/50'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -317,9 +317,9 @@ service cloud.firestore {
 
           {activeTab === 'voice' && (
             <div className="space-y-4">
-              <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-purple-900 text-xs">
+              <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 text-rose-900 text-xs">
                 <h4 className="font-bold text-sm mb-1 flex items-center gap-2">
-                  <Mic className="w-4 h-4 text-purple-600" />
+                  <Mic className="w-4 h-4 text-rose-600" />
                   Panduan Pengujian Voice AI (Speech-to-Text &amp; NLP Parsing)
                 </h4>
                 <p>

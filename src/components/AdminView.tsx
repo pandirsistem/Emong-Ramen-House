@@ -555,7 +555,7 @@ export function AdminView({
         <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="hidden md:flex text-xs font-bold text-slate-700 uppercase tracking-wider items-center gap-1.5 shrink-0">
-              <Calendar className="w-3.5 h-3.5 text-purple-600" />
+              <Calendar className="w-3.5 h-3.5 text-rose-600" />
               Periode Data:
             </span>
             <DateRangePicker
@@ -568,7 +568,7 @@ export function AdminView({
             <button
               type="button"
               onClick={() => setDateRange({ preset: 'all', startDate: '', endDate: '' })}
-              className="text-[10px] sm:text-xs text-purple-700 hover:text-purple-900 font-semibold bg-purple-50 hover:bg-purple-100 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg border border-purple-200 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+              className="text-[10px] sm:text-xs text-rose-700 hover:text-rose-900 font-semibold bg-rose-50 hover:bg-rose-100 px-2 py-1 sm:px-2.5 sm:py-1 rounded-lg border border-rose-200 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
               title="Reset Filter Tanggal"
             >
               ✕ <span>Reset</span>
@@ -585,20 +585,6 @@ export function AdminView({
               🛒 {rangeExpenses.length} Belanja
             </span>
           </div>
-
-          {/* Direct Google Sheets Link in Admin Filter Bar */}
-          {settings.spreadsheetUrl && (
-            <a
-              href={settings.spreadsheetUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg sm:rounded-xl bg-emerald-700 hover:bg-emerald-600 active:bg-emerald-800 text-white text-[11px] sm:text-xs font-bold transition-all shadow-xs active:scale-95 shrink-0"
-              title="Buka Spreadsheet Google Sheets Toko"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              <span>Sheets</span>
-            </a>
-          )}
 
           {/* Download Excel (.xlsx) button */}
           <button
@@ -694,14 +680,14 @@ export function AdminView({
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <div>
                   <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-purple-600" />
+                    <BarChart3 className="w-4 h-4 text-rose-600" />
                     Perbandingan Pemasukan vs Pengeluaran
                   </h4>
                   <p className="text-xs text-slate-400">
                     Proporsi uang masuk tervalidasi vs beban belanja bisnis
                   </p>
                 </div>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 border border-purple-200">
+                <span className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200">
                   Rekapitulasi
                 </span>
               </div>
@@ -805,7 +791,7 @@ export function AdminView({
         {/* Monthly Trend Chart */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
           <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
-            <BarChart3 className="w-4 h-4 text-purple-600" />
+            <BarChart3 className="w-4 h-4 text-rose-600" />
             Tren Keuangan Bulanan
           </h4>
           <div className="h-64">
@@ -828,18 +814,18 @@ export function AdminView({
       {/* 2. APPROVAL SYSTEM */}
       {activeTab === 'approvals' && (
         <div className="space-y-5 animate-fade-in">
-          <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h3 className="font-extrabold text-purple-900 text-base flex items-center gap-2">
-                <CheckCircle className="w-5 h-5 text-purple-600" />
+              <h3 className="font-extrabold text-rose-900 text-base flex items-center gap-2">
+                <CheckCircle className="w-5 h-5 text-rose-600" />
                 Persetujuan Setoran Kasir (Approval System)
               </h3>
-              <p className="text-xs text-purple-700 mt-0.5">
+              <p className="text-xs text-rose-700 mt-0.5">
                 Pastikan uang fisik tunai telah diterima dan dicocokkan dengan catatan sistem kasir.
               </p>
             </div>
-            <div className="flex items-center gap-2 text-xs font-bold text-purple-900">
-              <span className="px-3 py-1 bg-white rounded-xl shadow-xs border border-purple-200">
+            <div className="flex items-center gap-2 text-xs font-bold text-rose-900">
+              <span className="px-3 py-1 bg-white rounded-xl shadow-xs border border-rose-200">
                 {pendingClosings.length} Menunggu Tindakan
               </span>
             </div>
@@ -962,7 +948,7 @@ export function AdminView({
                               setReviewStatus('approved');
                               setReviewNotes('');
                             }}
-                            className="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow transition-all active:scale-95 cursor-pointer"
+                            className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow transition-all active:scale-95 cursor-pointer"
                           >
                             Validasi &amp; Tinjau Setoran
                           </button>
@@ -1020,7 +1006,7 @@ export function AdminView({
                   type="date"
                   value={expenseDate}
                   onChange={(e) => setExpenseDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                   required
                 />
               </div>
@@ -1032,7 +1018,7 @@ export function AdminView({
                 <select
                   value={expenseCategory}
                   onChange={(e) => setExpenseCategory(e.target.value as ExpenseCategory)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                 >
                   {EXPENSE_CATEGORIES.map((cat) => (
                     <option key={cat} value={cat}>
@@ -1051,7 +1037,7 @@ export function AdminView({
                   placeholder="Contoh: Daging ayam &amp; telur 10kg"
                   value={expenseTitle}
                   onChange={(e) => setExpenseTitle(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 font-medium focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 font-medium focus:ring-2 focus:ring-rose-500 outline-none"
                   required
                 />
               </div>
@@ -1067,7 +1053,7 @@ export function AdminView({
                     placeholder="0"
                     value={expenseAmount}
                     onChange={(e) => setExpenseAmount(formatCurrency(e.target.value))}
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-rose-500 outline-none"
                     required
                   />
                 </div>
@@ -1082,7 +1068,7 @@ export function AdminView({
                   placeholder="Keterangan toko pembelian, nomor nota, dll..."
                   value={expenseNotes}
                   onChange={(e) => setExpenseNotes(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none resize-none"
+                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none resize-none"
                 />
               </div>
 
@@ -1091,8 +1077,8 @@ export function AdminView({
                   Upload Foto Struk / Nota
                 </label>
                 <div className="flex items-center gap-3">
-                  <label className="flex-1 flex items-center justify-center gap-2 p-2.5 border-2 border-dashed border-slate-300 hover:border-purple-400 rounded-xl cursor-pointer bg-slate-50 text-xs font-semibold text-slate-600 transition-colors">
-                    <Camera className="w-4 h-4 text-purple-600" />
+                  <label className="flex-1 flex items-center justify-center gap-2 p-2.5 border-2 border-dashed border-slate-300 hover:border-rose-400 rounded-xl cursor-pointer bg-slate-50 text-xs font-semibold text-slate-600 transition-colors">
+                    <Camera className="w-4 h-4 text-rose-600" />
                     <span>Unggah Struk</span>
                     <input
                       type="file"
@@ -1123,7 +1109,7 @@ export function AdminView({
               <button
                 type="submit"
                 disabled={isSubmittingExpense || !expenseAmount || !expenseTitle}
-                className="w-full py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-md disabled:opacity-50 transition-all cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md disabled:opacity-50 transition-all cursor-pointer"
               >
                 {isSubmittingExpense ? 'Menyimpan...' : 'Simpan Pengeluaran Operasional'}
               </button>
@@ -1212,7 +1198,7 @@ export function AdminView({
                 Daftarkan akun kasir baru dan kelola hak akses staf kasir
               </p>
             </div>
-            <span className="px-3 py-1 bg-purple-50 text-purple-800 rounded-xl text-xs font-bold border border-purple-200">
+            <span className="px-3 py-1 bg-rose-50 text-rose-800 rounded-xl text-xs font-bold border border-rose-200">
               {cashiers.length} Kasir Terdaftar
             </span>
           </div>
@@ -1234,7 +1220,7 @@ export function AdminView({
             {/* Panel Kiri: Form Tambah Kasir Baru */}
             <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
               <h4 className="font-bold text-slate-800 text-sm mb-3 flex items-center gap-2">
-                <UserPlus className="w-4 h-4 text-purple-600" />
+                <UserPlus className="w-4 h-4 text-rose-600" />
                 Tambah Kasir Baru
               </h4>
               <form onSubmit={handleCreateCashier} className="space-y-3">
@@ -1247,7 +1233,7 @@ export function AdminView({
                     placeholder="Nama Lengkap Kasir"
                     value={cashierName}
                     onChange={(e) => setCashierName(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                     required
                   />
                 </div>
@@ -1261,7 +1247,7 @@ export function AdminView({
                     placeholder="Contoh: kasir1 atau kasir1@emongramen.com"
                     value={cashierUsername}
                     onChange={(e) => setCashierUsername(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                     required
                   />
                 </div>
@@ -1276,7 +1262,7 @@ export function AdminView({
                       placeholder="Minimal 6 karakter"
                       value={cashierPassword}
                       onChange={(e) => setCashierPassword(e.target.value)}
-                      className="w-full pl-3 pr-10 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                      className="w-full pl-3 pr-10 py-2 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                       required
                     />
                     <button
@@ -1297,7 +1283,7 @@ export function AdminView({
                   <select
                     value={cashierShift}
                     onChange={(e) => setCashierShift(e.target.value as ShiftType)}
-                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-bold text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                   >
                     <option value="Pagi">Shift Pagi</option>
                     <option value="Siang">Shift Siang</option>
@@ -1308,7 +1294,7 @@ export function AdminView({
                 <button
                   type="submit"
                   disabled={isSubmittingCashier}
-                  className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs shadow transition-colors cursor-pointer disabled:opacity-50"
+                  className="w-full py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-lg text-xs shadow transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {isSubmittingCashier ? 'Mendaftarkan ke Firebase...' : 'Tambah Kasir'}
                 </button>
@@ -1319,7 +1305,7 @@ export function AdminView({
             <div className="p-4 bg-white rounded-xl border border-slate-200 flex flex-col">
               <h4 className="font-bold text-slate-800 text-sm mb-3 flex items-center justify-between">
                 <span className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-purple-600" />
+                  <Users className="w-4 h-4 text-rose-600" />
                   Daftar Kasir Terdaftar
                 </span>
                 <span className="text-xs text-slate-400 font-normal">
@@ -1347,7 +1333,7 @@ export function AdminView({
                           <div className="space-y-1 min-w-0 flex-1 pr-2">
                             <div className="flex flex-wrap items-center gap-1.5">
                               <p className="font-bold text-xs text-slate-900 truncate">{c.displayName}</p>
-                              <span className="inline-block text-[9px] font-semibold px-1.5 py-0.2 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                              <span className="inline-block text-[9px] font-semibold px-1.5 py-0.2 rounded-md bg-rose-50 text-rose-700 border border-rose-200">
                                 Shift {c.shift || 'Pagi'}
                               </span>
                               {isAccountActive ? (
@@ -1377,7 +1363,7 @@ export function AdminView({
                                   e.stopPropagation();
                                   setVisiblePasswords((prev) => ({ ...prev, [c.id]: !prev[c.id] }));
                                 }}
-                                className="text-slate-400 hover:text-purple-600 transition-colors p-0.5 rounded cursor-pointer"
+                                className="text-slate-400 hover:text-rose-600 transition-colors p-0.5 rounded cursor-pointer"
                                 title={visiblePasswords[c.id] ? 'Sembunyikan Password' : 'Lihat Password'}
                                 aria-label="Toggle password view"
                               >
@@ -1435,15 +1421,15 @@ export function AdminView({
                 </div>
 
                 {/* Security Best Practice Notice Box */}
-                <div className="mt-3 p-3 bg-purple-50/70 border border-purple-200/80 rounded-xl text-[11px] text-purple-900 space-y-1">
-                  <div className="flex items-center gap-1.5 font-bold text-purple-900">
-                    <Shield className="w-3.5 h-3.5 text-purple-700" />
+                <div className="mt-3 p-3 bg-rose-50/70 border border-rose-200/80 rounded-xl text-[11px] text-rose-900 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-rose-900">
+                    <Shield className="w-3.5 h-3.5 text-rose-700" />
                     <span>Keamanan Akun &amp; Pembatalan Sesi (Real-Time Auth Guard)</span>
                   </div>
-                  <p className="text-purple-800/90 leading-relaxed">
+                  <p className="text-rose-800/90 leading-relaxed">
                     • <strong>Nonaktifkan (Soft Delete)</strong>: Mempertahankan data transaksi lama pada laporan keuangan, namun langsung memutuskan sesi login kasir yang sedang aktif secara <em>real-time</em> dan memblokir login kembali.
                   </p>
-                  <p className="text-purple-800/90 leading-relaxed">
+                  <p className="text-rose-800/90 leading-relaxed">
                     • <strong>Hapus Permanen</strong>: Menghapus profil dari database dan mencabut token otentikasi kasir.
                   </p>
                 </div>
@@ -1459,7 +1445,7 @@ export function AdminView({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
             <div>
               <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
-                <FileText className="w-5 h-5 text-purple-600" />
+                <FileText className="w-5 h-5 text-rose-600" />
                 Laporan Keuangan Periodik
               </h3>
               <p className="text-xs text-slate-500">
@@ -1514,7 +1500,7 @@ export function AdminView({
                       }}
                       className={`px-2 py-1 rounded-md text-[10px] font-bold transition-colors cursor-pointer ${
                         isSelected
-                          ? 'bg-purple-600 text-white shadow-xs'
+                          ? 'bg-rose-600 text-white shadow-xs'
                           : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
@@ -1532,7 +1518,7 @@ export function AdminView({
                 placeholder="Cari transaksi..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-56"
+                className="pl-9 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-56"
               />
             </div>
           </div>
@@ -1652,7 +1638,7 @@ export function AdminView({
                 placeholder="Cari audit log..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-56"
+                className="pl-9 pr-3 py-1.5 border border-slate-200 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-rose-500 w-full sm:w-56"
               />
             </div>
           </div>
@@ -1695,7 +1681,7 @@ export function AdminView({
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-purple-600" />
+                  <Settings className="w-5 h-5 text-rose-600" />
                   Pengaturan Integrasi &amp; Webhook
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -1728,7 +1714,7 @@ export function AdminView({
                   type="text"
                   value={businessNameInput}
                   onChange={(e) => setBusinessNameInput(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                 />
               </div>
 
@@ -1741,7 +1727,7 @@ export function AdminView({
                   placeholder="https://docs.google.com/spreadsheets/d/your-id/edit"
                   value={spreadsheetUrlInput}
                   onChange={(e) => setSpreadsheetUrlInput(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
                   Link ini akan terbuka otomatis saat tombol 'Google Sheets' di header Admin diklik. (Cukup diset sekali)
@@ -1757,7 +1743,7 @@ export function AdminView({
                   placeholder="https://script.google.com/macros/s/.../exec"
                   value={webhookUrlInput}
                   onChange={(e) => setWebhookUrlInput(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                 />
                 <span className="text-[10px] text-slate-400 mt-1 block">
                   Setiap transaksi baru otomatis diposting ke endpoint Apps Script ini. (Cukup diset sekali)
@@ -1773,7 +1759,7 @@ export function AdminView({
                   placeholder="6281234567890"
                   value={whatsappPhoneInput}
                   onChange={(e) => setWhatsappPhoneInput(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                 />
               </div>
 
@@ -1788,7 +1774,7 @@ export function AdminView({
                     placeholder="0"
                     value={initialCapitalInput}
                     onChange={(e) => setInitialCapitalInput(formatCurrency(e.target.value))}
-                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-purple-500 outline-none"
+                    className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-rose-500 outline-none"
                   />
                   <div className="text-[10px] text-slate-500 mt-1">
                     {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(parseCurrency(initialCapitalInput))}
@@ -1799,7 +1785,7 @@ export function AdminView({
               <button
                 type="submit"
                 disabled={isSavingSettings}
-                className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow cursor-pointer disabled:opacity-50"
               >
                 {isSavingSettings ? 'Menyimpan...' : 'Simpan Pengaturan'}
               </button>
@@ -1944,7 +1930,7 @@ export function AdminView({
                 placeholder="Catatan validasi brankas, nomor amplop, atau alasan penolakan..."
                 value={reviewNotes}
                 onChange={(e) => setReviewNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                className="w-full px-3 py-2 border border-slate-300 rounded-xl text-xs text-slate-800 outline-none focus:ring-2 focus:ring-rose-500 resize-none"
               />
             </div>
 
@@ -1960,7 +1946,7 @@ export function AdminView({
                 type="button"
                 onClick={handleConfirmReview}
                 disabled={isSubmittingReview}
-                className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow cursor-pointer disabled:opacity-50"
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow cursor-pointer disabled:opacity-50"
               >
                 {isSubmittingReview ? 'Menyimpan...' : 'Simpan Keputusan'}
               </button>
