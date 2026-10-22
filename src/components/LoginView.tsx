@@ -48,29 +48,12 @@ export function LoginView() {
 
   return (
     <div 
-      className="min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col justify-between p-4 sm:p-6 lg:p-8 relative bg-cover bg-center bg-fixed"
+      className="min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col justify-center p-4 sm:p-6 lg:p-8 relative bg-cover bg-center bg-fixed"
       style={{
         backgroundColor: '#7f1d1d',
         backgroundImage: `linear-gradient(to bottom, rgba(15, 5, 8, 0.78), rgba(15, 5, 8, 0.88)), url('/ramen-bg.jpg')`
       }}
     >
-      {/* Top Banner / Store Contact */}
-      <div className="w-full max-w-md mx-auto pt-2 flex items-center justify-between text-xs text-amber-200 z-10">
-        <span className="font-bold tracking-wide flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-950/80 border border-rose-800/60 backdrop-blur-md shadow-sm">
-          <ShieldCheck className="w-4 h-4 text-emerald-400" />
-          Sistem Kasir Terproteksi
-        </span>
-        <a
-          href={`https://wa.me/${cleanPhone}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 bg-red-950/80 hover:bg-red-900 text-amber-300 px-3 py-1.5 rounded-full border border-rose-800/60 backdrop-blur-md transition-colors font-semibold shadow-sm"
-        >
-          <Phone className="w-3 h-3 text-amber-400" />
-          <span>WA: {settings.whatsappAdminPhone || '085694528073'}</span>
-        </a>
-      </div>
-
       {/* Main Login Card */}
       <div className="w-full max-w-md mx-auto my-auto py-6 z-10">
         <div className="bg-white/95 backdrop-blur-xl border border-rose-900/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black">
@@ -151,6 +134,7 @@ export function LoginView() {
                   onChange={(e) => setIdentifier(e.target.value)}
                   placeholder="Username atau Email"
                   autoComplete="username"
+                  style={{ WebkitUserSelect: 'text', userSelect: 'text', touchAction: 'manipulation' }}
                   className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-black placeholder-slate-400 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all"
                 />
               </div>
@@ -173,6 +157,7 @@ export function LoginView() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Masukkan Password Anda"
                   autoComplete="current-password"
+                  style={{ WebkitUserSelect: 'text', userSelect: 'text', touchAction: 'manipulation' }}
                   className="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-300 rounded-xl text-black placeholder-slate-400 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent transition-all"
                 />
                 <button
@@ -212,16 +197,6 @@ export function LoginView() {
           </form>
         </div>
       </div>
-
-      {/* Footer Branding */}
-      <footer className="w-full max-w-md mx-auto pb-2 text-center text-xs text-amber-100 z-10">
-        <p className="font-extrabold text-white uppercase tracking-wider">
-          {settings.businessName || 'EMONG RAMEN HOUSE'}
-        </p>
-        <p className="text-[11px] text-amber-200/90 mt-0.5 font-medium">
-          WhatsApp Pemilik: {settings.whatsappAdminPhone || '085694528073'} • Mode Layar Penuh HP (PWA)
-        </p>
-      </footer>
     </div>
   );
 }
