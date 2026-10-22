@@ -89,25 +89,40 @@ function MainContent() {
   useEffect(() => {
     if (!userProfile) return;
 
-    // 1. Closings Live Sync
+    // 1. Closings Live Sync (All authenticated active users see identical transactions)
     let unsubClosings = () => {};
     try {
       const closingsRef = collection(db, 'closings');
-      const q = isCashier && userProfile?.id
-        ? query(closingsRef, where('cashierId', '==', userProfile.id))
-        : closingsRef;
-
       unsubClosings = onSnapshot(
-        q,
+        closingsRef,
         (snap) => {
           const map = new Map<string, ClosingRecord>();
           snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
           const list = Array.from(map.values()).sort(
             (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
           );
-          setClosings(list);
+
+          // If local storage has items not yet on the server (e.g. from previous offline/sync attempt),
+          // recover and push them to Firestore so data is never lost
           try {
-            localStorage.setItem('bukukas_closings', JSON.stringify(list));
+            const saved = localStorage.getItem('bukukas_closings');
+            if (saved) {
+              const localList: ClosingRecord[] = JSON.parse(saved);
+              localList.forEach((localItem) => {
+                if (localItem && localItem.id && !map.has(localItem.id)) {
+                  map.set(localItem.id, localItem);
+                  setDoc(doc(db, 'closings', localItem.id), localItem).catch(() => {});
+                }
+              });
+            }
+          } catch {}
+
+          const fullList = Array.from(map.values()).sort(
+            (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
+          );
+          setClosings(fullList);
+          try {
+            localStorage.setItem('bukukas_closings', JSON.stringify(fullList));
           } catch {}
         },
         (err) => {
@@ -115,37 +130,50 @@ function MainContent() {
         }
       );
     } catch (e) {
-      console.warn('Closings listener failed to attach.');
+      console.warn('Closings listener failed to attach:', e);
     }
 
-    // 2. Expenses Live Sync (Admin only)
+    // 2. Expenses Live Sync (Synced across all authenticated users for identical balances)
     let unsubExpenses = () => {};
-    if (isAdmin) {
-      try {
-        const expensesRef = collection(db, 'expenses');
-        unsubExpenses = onSnapshot(
-          expensesRef,
-          (snap) => {
-            const map = new Map<string, ExpenseRecord>();
-            snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-            const list = Array.from(map.values()).sort(
-              (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
-            );
-            setExpenses(list);
-            try {
-              localStorage.setItem('bukukas_expenses', JSON.stringify(list));
-            } catch {}
-          },
-          (err) => {
-            console.warn('Firestore expenses sync note:', err.message);
-          }
-        );
-      } catch (e) {
-        console.warn('Expenses listener failed to attach.');
-      }
+    try {
+      const expensesRef = collection(db, 'expenses');
+      unsubExpenses = onSnapshot(
+        expensesRef,
+        (snap) => {
+          const map = new Map<string, ExpenseRecord>();
+          snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
+          
+          // Recover unsynced local expenses if any
+          try {
+            const saved = localStorage.getItem('bukukas_expenses');
+            if (saved) {
+              const localList: ExpenseRecord[] = JSON.parse(saved);
+              localList.forEach((localItem) => {
+                if (localItem && localItem.id && !map.has(localItem.id)) {
+                  map.set(localItem.id, localItem);
+                  setDoc(doc(db, 'expenses', localItem.id), localItem).catch(() => {});
+                }
+              });
+            }
+          } catch {}
+
+          const fullList = Array.from(map.values()).sort(
+            (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
+          );
+          setExpenses(fullList);
+          try {
+            localStorage.setItem('bukukas_expenses', JSON.stringify(fullList));
+          } catch {}
+        },
+        (err) => {
+          console.warn('Firestore expenses sync note:', err.message);
+        }
+      );
+    } catch (e) {
+      console.warn('Expenses listener failed to attach:', e);
     }
 
-    // 3. Audit Logs Live Sync (Admin only)
+    // 3. Audit Logs Live Sync
     let unsubAudit = () => {};
     if (isAdmin) {
       try {
@@ -168,7 +196,7 @@ function MainContent() {
           }
         );
       } catch (e) {
-        console.warn('Audit listener failed to attach.');
+        console.warn('Audit listener failed to attach:', e);
       }
     }
 
@@ -177,7 +205,7 @@ function MainContent() {
       unsubExpenses();
       unsubAudit();
     };
-  }, [isAdmin, isCashier, userProfile?.id]);
+  }, [isAdmin, userProfile?.id]);
 
   if (loading) {
     return (
@@ -216,13 +244,7 @@ function MainContent() {
       } : {})
     };
 
-    // Real-Time Cloud Save
-    try {
-      await setDoc(doc(db, 'closings', id), newClosing);
-    } catch (err) {
-      console.warn('Firestore save closing fallback note:', err);
-    }
-
+    // Immediate optimistic state update
     setClosings((prev) => {
       const updated = dedupeById([newClosing, ...prev]);
       try {
@@ -230,6 +252,19 @@ function MainContent() {
       } catch {}
       return updated;
     });
+
+    // Real-Time Cloud Save to Firestore (persists on refresh and syncs to all devices)
+    try {
+      await setDoc(doc(db, 'closings', id), newClosing);
+    } catch (err: any) {
+      console.error('Firestore save closing error:', err);
+      // Fallback: save to local cache
+      try {
+        const saved = localStorage.getItem('bukukas_closings');
+        const list: ClosingRecord[] = saved ? JSON.parse(saved) : [];
+        localStorage.setItem('bukukas_closings', JSON.stringify(dedupeById([newClosing, ...list])));
+      } catch {}
+    }
 
     return newClosing;
   };
@@ -244,13 +279,7 @@ function MainContent() {
       createdAt: new Date().toISOString(),
     };
 
-    // Real-Time Cloud Save
-    try {
-      await setDoc(doc(db, 'expenses', id), newExpense);
-    } catch (err) {
-      console.warn('Firestore save expense fallback note:', err);
-    }
-
+    // Immediate optimistic state update
     setExpenses((prev) => {
       const updated = dedupeById([newExpense, ...prev]);
       try {
@@ -258,6 +287,19 @@ function MainContent() {
       } catch {}
       return updated;
     });
+
+    // Real-Time Cloud Save to Firestore (persists on refresh and syncs to all devices)
+    try {
+      await setDoc(doc(db, 'expenses', id), newExpense);
+    } catch (err: any) {
+      console.error('Firestore save expense error:', err);
+      // Fallback: save to local cache
+      try {
+        const saved = localStorage.getItem('bukukas_expenses');
+        const list: ExpenseRecord[] = saved ? JSON.parse(saved) : [];
+        localStorage.setItem('bukukas_expenses', JSON.stringify(dedupeById([newExpense, ...list])));
+      } catch {}
+    }
 
     return newExpense;
   };
@@ -276,13 +318,7 @@ function MainContent() {
       updatedAt: new Date().toISOString(),
     };
 
-    // Real-Time Cloud Update
-    try {
-      await updateDoc(doc(db, 'closings', id), updateData);
-    } catch (err) {
-      console.warn('Firestore update closing fallback note:', err);
-    }
-
+    // Optimistic local update
     setClosings((prev) => {
       const updated = prev.map((c) => (c.id === id ? { ...c, ...updateData } : c));
       try {
@@ -290,16 +326,17 @@ function MainContent() {
       } catch {}
       return updated;
     });
+
+    // Real-Time Cloud Update
+    try {
+      await updateDoc(doc(db, 'closings', id), updateData);
+    } catch (err) {
+      console.error('Firestore update closing error:', err);
+    }
   };
 
   const handleDeleteExpense = async (id: string) => {
-    // Real-Time Cloud Delete
-    try {
-      await deleteDoc(doc(db, 'expenses', id));
-    } catch (err) {
-      console.warn('Firestore delete expense fallback note:', err);
-    }
-
+    // Optimistic local update
     setExpenses((prev) => {
       const updated = prev.filter((e) => e.id !== id);
       try {
@@ -307,6 +344,13 @@ function MainContent() {
       } catch {}
       return updated;
     });
+
+    // Real-Time Cloud Delete
+    try {
+      await deleteDoc(doc(db, 'expenses', id));
+    } catch (err) {
+      console.error('Firestore delete expense error:', err);
+    }
   };
 
   // Voice AI trigger callbacks
