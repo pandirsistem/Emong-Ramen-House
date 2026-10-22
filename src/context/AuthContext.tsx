@@ -73,8 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email.startsWith('admin');
 
           // STRICT LOGOUT GUARD:
-          // Jika dokumen pengguna tidak ada di Firestore (sudah dihapus Admin) dan bukan Master Admin,
-          // paksa logout pengguna secara otomatis.
           if (!userSnap.exists() && !isMasterAdmin) {
             await signOut(auth);
             setCurrentUser(null);
@@ -314,7 +312,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.warn('Google Sign-in warning:', err);
       throw err;
-    } fontally {
+    } finally {
       setLoading(false);
     }
   };
