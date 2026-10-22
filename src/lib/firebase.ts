@@ -8,7 +8,7 @@ export enum OperationType {
   UPDATE = 'update',
   DELETE = 'delete',
   LIST = 'list',
-  GET = 'get',
+  GET = 'GET',
   WRITE = 'write',
 }
 
@@ -31,8 +31,8 @@ export interface FirestoreErrorInfo {
 
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Menggunakan database ID khusus sesuai konfigurasi proyek Anda
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Inisialisasi Firestore Database
+export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId);
 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
@@ -63,15 +63,12 @@ export async function testConnection(): Promise<boolean> {
     await getDocFromServer(doc(db, 'test', 'connection'));
     return true;
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
-      console.warn('Firebase client offline, falling back or check internet connection.');
-    }
     return false;
   }
 }
 
 export async function createCashierInFirebaseAuth(email: string, pass: string, name: string): Promise<string> {
-  const secondaryAppName = `SecApp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const secondaryAppName = `SecApp_${Date.now()}`;
   const secondaryApp = initializeApp(firebaseConfig, secondaryAppName);
   try {
     const secAuth = getAuth(secondaryApp);
@@ -83,8 +80,6 @@ export async function createCashierInFirebaseAuth(email: string, pass: string, n
   } finally {
     try {
       await deleteApp(secondaryApp);
-    } catch {
-      // Ignored
-    }
+    } catch {}
   }
 }
