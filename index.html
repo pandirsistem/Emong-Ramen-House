@@ -61,6 +61,143 @@
         }, true);
       })();
     </script>
+
+    <!-- PWA Service Worker Auto-Update & Version Detection Registration -->
+    <script>
+      (function () {
+        if (!('serviceWorker' in navigator)) return;
+
+        var isRefreshing = false;
+        var RELOAD_KEY = 'pwa_sw_last_reload';
+
+        // 6. Fungsi reload aman untuk mencegah infinite loop reload
+        function safeReload() {
+          if (isRefreshing) return;
+          isRefreshing = true;
+          try {
+            var last = sessionStorage.getItem(RELOAD_KEY);
+            var now = Date.now();
+            // Cegah reload berulang jika baru saja reload dalam 4 detik terakhir
+            if (last && now - parseInt(last, 10) < 4000) {
+              console.warn('[PWA] Mencegah reload berulang terlalu cepat (anti-loop protection).');
+              return;
+            }
+            sessionStorage.setItem(RELOAD_KEY, String(now));
+          } catch (e) {}
+          window.location.reload();
+        }
+
+        // 3 & 4. Tampilkan konfirmasi interaktif kepada pengguna dan terapkan reload jika disetujui
+        function promptUserToUpdate(worker) {
+          function applyUpdate() {
+            if (worker && worker.postMessage) {
+              worker.postMessage({ type: 'SKIP_WAITING' });
+            }
+            safeReload();
+          }
+
+          var confirmed = false;
+          try {
+            // Konfirmasi interaktif native
+            confirmed = window.confirm('Versi baru aplikasi tersedia! Perbarui sekarang?');
+          } catch (err) {
+            confirmed = false;
+          }
+
+          if (confirmed) {
+            applyUpdate();
+          } else {
+            // Tampilkan banner toast interaktif jika confirm ditutup atau di lingkungan iframe
+            showUpdateToast(applyUpdate);
+          }
+        }
+
+        // Banner UI interaktif sebagai fallback ramah pengguna
+        function showUpdateToast(onConfirm) {
+          if (document.getElementById('pwa-update-prompt')) return;
+          var banner = document.createElement('div');
+          banner.id = 'pwa-update-prompt';
+          banner.style.cssText =
+            'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:99999;' +
+            'background:#1e0a0f;color:#fff;border:1px solid #f59e0b;padding:10px 16px;' +
+            'border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.5);display:flex;' +
+            'align-items:center;gap:12px;font-family:system-ui,-apple-system,sans-serif;font-size:13px;font-weight:600;max-width:92vw;';
+          banner.innerHTML =
+            '<span>✨ Versi baru aplikasi tersedia!</span>' +
+            '<button id="pwa-update-btn" style="background:#10b981;color:#fff;border:none;padding:6px 12px;border-radius:8px;font-weight:700;cursor:pointer;font-size:12px;white-space:nowrap;">Perbarui Sekarang</button>' +
+            '<button id="pwa-close-btn" style="background:transparent;color:#9ca3af;border:none;font-size:16px;cursor:pointer;padding:0 4px;line-height:1;">✕</button>';
+          document.body.appendChild(banner);
+
+          var btn = document.getElementById('pwa-update-btn');
+          if (btn) {
+            btn.onclick = function () {
+              banner.remove();
+              onConfirm();
+            };
+          }
+          var close = document.getElementById('pwa-close-btn');
+          if (close) {
+            close.onclick = function () {
+              banner.remove();
+            };
+          }
+        }
+
+        // 5. Tambahkan pemantauan event controllerchange pada navigator.serviceWorker
+        navigator.serviceWorker.addEventListener('controllerchange', function () {
+          console.log('[PWA] Service Worker controller baru telah aktif. Memuat ulang halaman...');
+          safeReload();
+        });
+
+        // 1. Daftarkan Service Worker (/sw.js) saat halaman selesai dimuat (window.load)
+        window.addEventListener('load', function () {
+          navigator.serviceWorker
+            .register('/sw.js', { scope: '/' })
+            .then(function (registration) {
+              console.log('[PWA] Service Worker berhasil didaftarkan:', registration.scope);
+
+              // Cek jika Service Worker baru sudah dalam status waiting
+              if (registration.waiting && navigator.serviceWorker.controller) {
+                console.log('[PWA] Service Worker baru sedang menunggu aktivasi.');
+                promptUserToUpdate(registration.waiting);
+              }
+
+              // 2. Tambahkan listener pada event updatefound untuk memantau keberadaan versi baru
+              registration.addEventListener('updatefound', function () {
+                var installingWorker = registration.installing;
+                if (!installingWorker) return;
+
+                installingWorker.addEventListener('statechange', function () {
+                  // 3. Ketika ada Service Worker baru yang statusnya installed dan sudah ada pengontrol aktif
+                  if (installingWorker.state === 'installed') {
+                    if (navigator.serviceWorker.controller) {
+                      console.log('[PWA] Versi baru aplikasi terpasang di latar belakang.');
+                      promptUserToUpdate(installingWorker);
+                    } else {
+                      console.log('[PWA] Konten siap untuk digunakan offline.');
+                    }
+                  }
+                });
+              });
+
+              // Otomatis cek update saat tab/aplikasi kembali aktif di layar depan (foreground)
+              document.addEventListener('visibilitychange', function () {
+                if (document.visibilityState === 'visible') {
+                  registration.update().catch(function () {});
+                }
+              });
+
+              // Interval berkala periksa update (setiap 60 menit)
+              setInterval(function () {
+                registration.update().catch(function () {});
+              }, 60 * 60 * 1000);
+            })
+            .catch(function (error) {
+              console.warn('[PWA] Registrasi Service Worker gagal:', error);
+            });
+        });
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

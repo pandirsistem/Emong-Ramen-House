@@ -140,9 +140,9 @@ export function DateRangePicker({ value, onChange, className = '' }: DateRangePi
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl bg-white border border-slate-200 hover:border-purple-300 hover:bg-purple-50/30 text-[11px] sm:text-xs font-semibold text-slate-700 shadow-xs transition-all active:scale-95 cursor-pointer"
+        className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl bg-white border border-slate-200 hover:border-rose-400 hover:bg-rose-50/40 text-[11px] sm:text-xs font-semibold text-slate-700 shadow-xs transition-all active:scale-95 cursor-pointer"
       >
-        <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-purple-600 shrink-0" />
+        <CalendarIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-600 shrink-0" />
         <span className="truncate max-w-[125px] xs:max-w-[170px] sm:max-w-[260px]">{getDisplayLabel()}</span>
         <ChevronDown className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
@@ -159,7 +159,7 @@ export function DateRangePicker({ value, onChange, className = '' }: DateRangePi
             </span>
             <button
               onClick={() => setIsOpen(false)}
-              className="text-slate-400 hover:text-slate-600 p-1"
+              className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -174,10 +174,10 @@ export function DateRangePicker({ value, onChange, className = '' }: DateRangePi
                   key={p.id}
                   type="button"
                   onClick={() => handleSelectPreset(p.id)}
-                  className={`text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between ${
+                  className={`text-left px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center justify-between cursor-pointer ${
                     isSelected
-                      ? 'bg-purple-600 text-white font-bold shadow-xs'
-                      : 'bg-slate-50 hover:bg-purple-50 hover:text-purple-700 text-slate-700'
+                      ? 'bg-rose-600 text-white font-bold shadow-xs'
+                      : 'bg-slate-50 hover:bg-rose-50 hover:text-rose-700 text-slate-700'
                   }`}
                 >
                   <span className="truncate">{p.label}</span>
@@ -199,7 +199,7 @@ export function DateRangePicker({ value, onChange, className = '' }: DateRangePi
                   type="date"
                   value={customStart}
                   onChange={(e) => setCustomStart(e.target.value)}
-                  className="w-full px-2 py-1 bg-white border border-slate-300 rounded-lg text-[11px] text-slate-800 font-semibold focus:ring-1 focus:ring-purple-500 outline-none"
+                  className="w-full px-2 py-1 bg-white border border-slate-300 rounded-lg text-[11px] text-slate-800 font-semibold focus:ring-1 focus:ring-rose-500 outline-none"
                 />
               </div>
               <div>
@@ -208,7 +208,7 @@ export function DateRangePicker({ value, onChange, className = '' }: DateRangePi
                   type="date"
                   value={customEnd}
                   onChange={(e) => setCustomEnd(e.target.value)}
-                  className="w-full px-2 py-1 bg-white border border-slate-300 rounded-lg text-[11px] text-slate-800 font-semibold focus:ring-1 focus:ring-purple-500 outline-none"
+                  className="w-full px-2 py-1 bg-white border border-slate-300 rounded-lg text-[11px] text-slate-800 font-semibold focus:ring-1 focus:ring-rose-500 outline-none"
                 />
               </div>
             </div>
@@ -216,7 +216,7 @@ export function DateRangePicker({ value, onChange, className = '' }: DateRangePi
             <button
               type="button"
               onClick={handleApplyCustom}
-              className="w-full py-1.5 px-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
+              className="w-full py-1.5 px-3 rounded-lg bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer"
             >
               Terapkan Rentang Tanggal
             </button>

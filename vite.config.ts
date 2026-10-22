@@ -11,13 +11,19 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        injectRegister: null,
+        workbox: {
+          skipWaiting: true,
+          clientsClaim: true,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
+        },
         manifest: {
           id: '/',
           name: 'EMONG RAMEN HOUSE',
           short_name: 'EmongRamen',
           description: 'EMONG RAMEN HOUSE - System Kasir & Manajemen',
-          theme_color: '#ffffff',
-          background_color: '#ffffff',
+          theme_color: '#1e0a0f',
+          background_color: '#1e0a0f',
           display: 'standalone',
           start_url: '/',
           scope: '/',

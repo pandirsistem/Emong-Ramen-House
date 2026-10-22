@@ -6,6 +6,7 @@ import { AdminView } from './components/AdminView';
 import { LoginView } from './components/LoginView';
 import { VoiceModal } from './components/VoiceModal';
 import { SetupGuideModal } from './components/SetupGuideModal';
+import { BottomNav } from './components/BottomNav';
 import {
   AuditLogRecord,
   ClosingRecord,
@@ -421,7 +422,7 @@ function MainContent() {
       />
 
       {/* Main View Area based on Strict RBAC */}
-      <main className="flex-1 w-full max-w-full overflow-x-hidden">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden pb-24 md:pb-6">
         {isCashier ? (
           <CashierView
             onOpenVoice={() => setIsVoiceOpen(true)}
@@ -443,6 +444,14 @@ function MainContent() {
           />
         )}
       </main>
+
+      {/* Fixed Mobile Bottom Navigation */}
+      <BottomNav
+        activeTab={adminTab}
+        setActiveTab={setAdminTab}
+        pendingClosingsCount={pendingClosingsCount}
+        onOpenVoice={() => setIsVoiceOpen(true)}
+      />
 
       {/* Footer */}
       <footer className="border-t border-rose-900/30 bg-[#1e0a0f]/90 py-3 text-center text-xs text-amber-200/80">
