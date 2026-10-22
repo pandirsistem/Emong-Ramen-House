@@ -13,7 +13,6 @@ import {
   ExpenseRecord,
   ShiftType
 } from './types';
-import { INITIAL_AUDIT_LOGS, INITIAL_CLOSINGS, INITIAL_EXPENSES } from './lib/mockData';
 import { db } from './lib/firebase';
 import {
   collection,
@@ -40,21 +39,18 @@ const dedupeById = <T extends { id: string }>(items: T[]): T[] => {
 function MainContent() {
   const { role, isAdmin, isCashier, userProfile, loading } = useAuth();
 
+  // Zero-dummy production initial states - filled purely via Firestore Real-Time Listener
   const [closings, setClosings] = useState<ClosingRecord[]>(() => {
     const saved = localStorage.getItem('bukukas_closings');
     if (saved) {
       try {
         const parsed: ClosingRecord[] = JSON.parse(saved);
-        if (parsed.some((c) => c.id && c.id.startsWith('cls_'))) {
-          localStorage.removeItem('bukukas_closings');
-          return [];
-        }
         return dedupeById(parsed);
       } catch (e) {
         return [];
       }
     }
-    return INITIAL_CLOSINGS;
+    return [];
   });
 
   const [expenses, setExpenses] = useState<ExpenseRecord[]>(() => {
@@ -62,16 +58,12 @@ function MainContent() {
     if (saved) {
       try {
         const parsed: ExpenseRecord[] = JSON.parse(saved);
-        if (parsed.some((e) => e.id && e.id.startsWith('exp_'))) {
-          localStorage.removeItem('bukukas_expenses');
-          return [];
-        }
         return dedupeById(parsed);
       } catch (e) {
         return [];
       }
     }
-    return INITIAL_EXPENSES;
+    return [];
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>(() => {
@@ -79,16 +71,12 @@ function MainContent() {
     if (saved) {
       try {
         const parsed: AuditLogRecord[] = JSON.parse(saved);
-        if (parsed.some((l) => l.id && l.id.startsWith('log_'))) {
-          localStorage.removeItem('bukukas_audit_logs');
-          return [];
-        }
         return dedupeById(parsed);
       } catch (e) {
         return [];
       }
     }
-    return INITIAL_AUDIT_LOGS;
+    return [];
   });
 
   const [adminTab, setAdminTab] = useState<'dashboard' | 'approvals' | 'expenses' | 'reports' | 'cashiers' | 'audit' | 'settings'>('dashboard');
@@ -97,9 +85,11 @@ function MainContent() {
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
-  // Firestore Real-Time Sync (Diperbaiki agar selalu update state dari Firebase)
+  // Firestore Real-Time Sync (Live listener across PC & HP devices without manual refresh)
   useEffect(() => {
-    // 1. Closings Sync
+    if (!userProfile) return;
+
+    // 1. Closings Live Sync
     let unsubClosings = () => {};
     try {
       const closingsRef = collection(db, 'closings');
@@ -112,22 +102,23 @@ function MainContent() {
         (snap) => {
           const map = new Map<string, ClosingRecord>();
           snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-          const list = Array.from(map.values());
-          // Update state walaupun list ada isinya dari Firebase
-          if (list.length > 0) {
-            setClosings(list);
+          const list = Array.from(map.values()).sort(
+            (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
+          );
+          setClosings(list);
+          try {
             localStorage.setItem('bukukas_closings', JSON.stringify(list));
-          }
+          } catch {}
         },
         (err) => {
-          console.warn('Firestore closings note:', err.message);
+          console.warn('Firestore closings sync note:', err.message);
         }
       );
     } catch (e) {
-      console.warn('Closings listener failed.');
+      console.warn('Closings listener failed to attach.');
     }
 
-    // 2. Expenses Sync (Admin only)
+    // 2. Expenses Live Sync (Admin only)
     let unsubExpenses = () => {};
     if (isAdmin) {
       try {
@@ -137,22 +128,24 @@ function MainContent() {
           (snap) => {
             const map = new Map<string, ExpenseRecord>();
             snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-            const list = Array.from(map.values());
-            if (list.length > 0) {
-              setExpenses(list);
+            const list = Array.from(map.values()).sort(
+              (a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime()
+            );
+            setExpenses(list);
+            try {
               localStorage.setItem('bukukas_expenses', JSON.stringify(list));
-            }
+            } catch {}
           },
           (err) => {
-            console.warn('Firestore expenses note:', err.message);
+            console.warn('Firestore expenses sync note:', err.message);
           }
         );
       } catch (e) {
-        console.warn('Expenses listener failed.');
+        console.warn('Expenses listener failed to attach.');
       }
     }
 
-    // 3. Audit Logs Sync (Admin only)
+    // 3. Audit Logs Live Sync (Admin only)
     let unsubAudit = () => {};
     if (isAdmin) {
       try {
@@ -165,17 +158,17 @@ function MainContent() {
             const list = Array.from(map.values()).sort(
               (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
             );
-            if (list.length > 0) {
-              setAuditLogs(list);
+            setAuditLogs(list);
+            try {
               localStorage.setItem('bukukas_audit_logs', JSON.stringify(list));
-            }
+            } catch {}
           },
           (err) => {
-            console.warn('Firestore audit note:', err.message);
+            console.warn('Firestore audit sync note:', err.message);
           }
         );
       } catch (e) {
-        console.warn('Audit listener failed.');
+        console.warn('Audit listener failed to attach.');
       }
     }
 
@@ -186,30 +179,55 @@ function MainContent() {
     };
   }, [isAdmin, isCashier, userProfile?.id]);
 
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#1e0a0f] text-white">
+        <div className="w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="font-bold text-sm tracking-wide text-amber-200">Memuat Sistem Keuangan...</p>
+      </div>
+    );
+  }
+
   if (!userProfile) return <LoginView />;
 
-  // Handlers
+  // Handlers with Auto-Approval & Real-Time Cloud Persistence
   const handleAddClosing = async (
     data: Omit<ClosingRecord, 'id' | 'createdAt' | 'status'>
   ): Promise<ClosingRecord> => {
     const id = `cls_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    
+    // Auto-approval logic:
+    // Selisih = (Uang Tunai + Uang Non-Tunai) - Total Tagihan/Target POS
+    const discrepancy = (data.cashAmount + data.nonCashAmount) - data.expectedPosAmount;
+    const isAutoApproved = discrepancy === 0;
+    const status: 'approved' | 'pending' = isAutoApproved ? 'approved' : 'pending';
+
     const newClosing: ClosingRecord = {
       ...data,
       id,
-      status: 'pending',
+      status,
+      discrepancyAmount: discrepancy,
       createdAt: new Date().toISOString(),
+      ...(isAutoApproved ? {
+        reviewedBy: 'system-auto',
+        reviewedByName: 'Sistem (Auto-Approved)',
+        reviewedAt: new Date().toISOString(),
+        reviewNotes: 'Otomatis disetujui sistem (Selisih Pas Rp 0)'
+      } : {})
     };
 
+    // Real-Time Cloud Save
     try {
       await setDoc(doc(db, 'closings', id), newClosing);
     } catch (err) {
-      console.warn('Firestore save closing fallback to local cache:', err);
+      console.warn('Firestore save closing fallback note:', err);
     }
 
     setClosings((prev) => {
       const updated = dedupeById([newClosing, ...prev]);
-      localStorage.setItem('bukukas_closings', JSON.stringify(updated));
+      try {
+        localStorage.setItem('bukukas_closings', JSON.stringify(updated));
+      } catch {}
       return updated;
     });
 
@@ -226,15 +244,18 @@ function MainContent() {
       createdAt: new Date().toISOString(),
     };
 
+    // Real-Time Cloud Save
     try {
       await setDoc(doc(db, 'expenses', id), newExpense);
     } catch (err) {
-      console.warn('Firestore save expense fallback to local cache:', err);
+      console.warn('Firestore save expense fallback note:', err);
     }
 
     setExpenses((prev) => {
       const updated = dedupeById([newExpense, ...prev]);
-      localStorage.setItem('bukukas_expenses', JSON.stringify(updated));
+      try {
+        localStorage.setItem('bukukas_expenses', JSON.stringify(updated));
+      } catch {}
       return updated;
     });
 
@@ -255,29 +276,35 @@ function MainContent() {
       updatedAt: new Date().toISOString(),
     };
 
+    // Real-Time Cloud Update
     try {
       await updateDoc(doc(db, 'closings', id), updateData);
     } catch (err) {
-      console.warn('Firestore update closing fallback to local cache:', err);
+      console.warn('Firestore update closing fallback note:', err);
     }
 
     setClosings((prev) => {
       const updated = prev.map((c) => (c.id === id ? { ...c, ...updateData } : c));
-      localStorage.setItem('bukukas_closings', JSON.stringify(updated));
+      try {
+        localStorage.setItem('bukukas_closings', JSON.stringify(updated));
+      } catch {}
       return updated;
     });
   };
 
   const handleDeleteExpense = async (id: string) => {
+    // Real-Time Cloud Delete
     try {
       await deleteDoc(doc(db, 'expenses', id));
     } catch (err) {
-      console.warn('Firestore delete expense fallback to local cache:', err);
+      console.warn('Firestore delete expense fallback note:', err);
     }
 
     setExpenses((prev) => {
       const updated = prev.filter((e) => e.id !== id);
-      localStorage.setItem('bukukas_expenses', JSON.stringify(updated));
+      try {
+        localStorage.setItem('bukukas_expenses', JSON.stringify(updated));
+      } catch {}
       return updated;
     });
   };
@@ -321,12 +348,12 @@ function MainContent() {
       title: parsed.title,
       notes: parsed.notes,
       recordedBy: userProfile?.id || 'admin',
-      recordedByName: userProfile?.displayName || 'Admin Utama',
+      recordedByName: userProfile?.displayName || 'Admin Voice AI',
     });
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-900 font-sans antialiased flex flex-col">
+    <div className="min-h-screen flex flex-col bg-transparent text-slate-900 antialiased selection:bg-rose-500 selection:text-white">
       {/* Top Navigation */}
       <Header
         onOpenVoice={() => setIsVoiceOpen(true)}
@@ -339,7 +366,7 @@ function MainContent() {
       />
 
       {/* Main View Area based on Strict RBAC */}
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-x-hidden">
         {isCashier ? (
           <CashierView
             onOpenVoice={() => setIsVoiceOpen(true)}
@@ -363,9 +390,9 @@ function MainContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white/80 py-4 text-center text-xs text-slate-500">
-        <p>
-          BukuKas Pro &amp; Keuangan AI • Role-Based Access Control • Firebase Firestore &amp; Google Apps Script
+      <footer className="border-t border-rose-900/30 bg-[#1e0a0f]/90 py-3 text-center text-xs text-amber-200/80">
+        <p className="font-medium">
+          EMONG RAMEN HOUSE • Real-Time Cloud Sync • Multi-Device POS
         </p>
       </footer>
 

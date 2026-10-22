@@ -1,6 +1,6 @@
 {
-  "name": "BukuKas Pro & Keuangan AI",
-  "description": "Aplikasi manajemen dan pencatatan keuangan multi-role (Admin & Kasir) dengan Voice AI, Firebase Firestore, dan integrasi Google Sheets.",
+  "name": "EMONG RAMEN HOUSE - System Kasir & Manajemen",
+  "description": "EMONG RAMEN HOUSE - System Kasir & Manajemen Keuangan Multi-Role dengan AI Voice, Firebase, dan Google Sheets.",
   "requestFramePermissions": ["camera", "microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

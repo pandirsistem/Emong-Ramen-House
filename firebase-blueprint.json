@@ -11,6 +11,10 @@
         "role": { "type": "string", "enum": ["admin", "cashier"] },
         "shift": { "type": "string" },
         "passwordHint": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["active", "disabled"] },
+        "disabledAt": { "type": "string" },
+        "deletedAt": { "type": "string" },
         "createdAt": { "type": "string" },
         "createdBy": { "type": "string" }
       },

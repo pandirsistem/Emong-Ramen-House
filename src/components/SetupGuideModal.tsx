@@ -292,6 +292,26 @@ service cloud.firestore {
                   {sampleRules}
                 </pre>
               </div>
+
+              {/* Security & Token Revocation Guide */}
+              <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs space-y-2">
+                <span className="font-bold flex items-center gap-1.5 text-amber-950">
+                  <Shield className="w-4 h-4 text-amber-600" />
+                  Mencabut Sesi Login Kasir (Revoke Token) &amp; Hapus Akun Firebase Auth:
+                </span>
+                <p className="leading-relaxed">
+                  Jika karyawan kasir berhenti bekerja, Admin dapat menonaktifkan akun kasir langsung dari tab <strong>Manajemen Kasir</strong>. Sistem dilengkapi <strong>Real-time Auth Guard</strong> yang otomatis memutus sesi kasir di perangkat mereka dalam hitungan detik.
+                </p>
+                <p className="leading-relaxed">
+                  Untuk membatalkan token di tingkat server Firebase Authentication secara instan melalui Node.js Admin SDK:
+                </p>
+                <div className="p-2 bg-slate-900 text-slate-100 rounded-lg font-mono text-[11px]">
+                  node scripts/revoke-firebase-user.js &lt;UID_KASIR&gt;
+                </div>
+                <p className="text-[11px] text-amber-800">
+                  Perintah ini mengeksekusi <code>admin.auth().revokeRefreshTokens(uid)</code> dan <code>admin.auth().deleteUser(uid)</code> sehingga seluruh token aktif di semua browser/perangkat kasir langsung ditolak oleh server Firebase.
+                </p>
+              </div>
             </div>
           )}
 

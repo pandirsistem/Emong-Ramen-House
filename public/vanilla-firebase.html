@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aplikasi Kasir & Transaksi Realtime - Auto Approval</title>
+  
+  <!-- Tailwind CSS via CDN untuk desain modern dan responsif -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen antialiased flex flex-col justify-between">
+
+  <!-- Header & Navigasi -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center text-white font-black text-xl shadow-md shadow-emerald-500/20">
+          💰
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight leading-tight">
+            Kasir Realtime <span class="text-emerald-600">Auto-Approval</span>
+          </h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Sinkronisasi Cloud Firestore Realtime Tanpa Refresh</p>
+        </div>
+      </div>
+
+      <!-- Live Firebase Status Indicator -->
+      <div class="flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200 text-xs font-semibold">
+        <span id="connectionDot" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="connectionText" class="text-slate-600 text-[11px]">Menghubungkan...</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Konten Utama -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6">
+
+    <!-- 1. Ringkasan Kartu Indikator Real-Time -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <!-- Total Dana Masuk (Hanya transaksi APPROVED) -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Dana Masuk</span>
+          <span class="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg text-sm font-bold">✓ Approved</span>
+        </div>
+        <div class="text-2xl sm:text-3xl font-extrabold text-emerald-600 font-mono" id="statDanaMasuk">Rp 0</div>
+        <p class="text-[11px] text-slate-400 mt-1">Dihitung otomatis dari transaksi approved</p>
+      </div>
+
+      <!-- Pending Approval (Transaksi berselisih) -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Pending Approval</span>
+          <span class="p-1.5 bg-amber-50 text-amber-600 rounded-lg text-sm font-bold">⏳ Antrean</span>
+        </div>
+        <div class="text-2xl sm:text-3xl font-extrabold text-amber-500 font-mono" id="statPendingCount">0 Transaksi</div>
+        <p class="text-[11px] text-slate-400 mt-1" id="statPendingNominal">Total: Rp 0</p>
+      </div>
+
+      <!-- Total Transaksi Tercatat -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Transaksi</span>
+          <span class="p-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-bold">📊 Realtime</span>
+        </div>
+        <div class="text-2xl sm:text-3xl font-extrabold text-slate-800 font-mono" id="statTotalCount">0</div>
+        <p class="text-[11px] text-slate-400 mt-1" id="statTotalTarget">Target Keseluruhan: Rp 0</p>
+      </div>
+    </div>
+
+    <!-- 2. Grid Form Input & Info Auto-Approval -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- Form Pencatatan Transaksi (Kiri) -->
+      <div class="lg:col-span-5 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div class="border-b border-slate-100 pb-3">
+          <h2 class="text-base font-extrabold text-slate-900">Input Transaksi Kasir</h2>
+          <p class="text-xs text-slate-500">Hitung otomatis selisih dan status approval</p>
+        </div>
+
+        <form id="formTransaksi" class="space-y-4">
+          <!-- Nama Kasir / Keterangan -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Keterangan / Nama Kasir</label>
+            <input 
+              type="text" 
+              id="inputKeterangan" 
+              placeholder="Contoh: Setoran Shift Pagi - Kasir Firman" 
+              required
+              class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+            />
+          </div>
+
+          <!-- Total Tagihan / Target -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Total Tagihan / Target (POS)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-400">Rp</span>
+              <input 
+                type="number" 
+                id="inputTotalTagihan" 
+                placeholder="0" 
+                min="0"
+                required
+                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- Uang Tunai -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Uang Tunai (Fisik Cash)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-400">Rp</span>
+              <input 
+                type="number" 
+                id="inputUangTunai" 
+                placeholder="0" 
+                min="0"
+                value="0"
+                required
+                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- Uang Non-Tunai -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Uang Non-Tunai (QRIS / Transfer / EDC)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-2.5 text-xs font-bold text-slate-400">Rp</span>
+              <input 
+                type="number" 
+                id="inputUangNonTunai" 
+                placeholder="0" 
+                min="0"
+                value="0"
+                required
+                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold text-slate-800 focus:bg-white focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          <!-- Live Kalkulasi Box -->
+          <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-medium">Total Uang Diterima:</span>
+              <span class="font-mono font-bold text-slate-800" id="calcTotalUang">Rp 0</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-500 font-medium">Selisih (Total Diterima - Tagihan):</span>
+              <span class="font-mono font-bold" id="calcSelisih">Rp 0</span>
+            </div>
+            <div class="pt-2 border-t border-slate-200 flex justify-between items-center">
+              <span class="text-xs font-bold text-slate-600">Prediksi Status:</span>
+              <span id="calcStatusBadge" class="px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase bg-emerald-100 text-emerald-800">
+                PAS (Auto-Approved)
+              </span>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            id="btnSubmit" 
+            class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-xs rounded-xl shadow-md shadow-emerald-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+          >
+            <span>Simpan Transaksi ke Firebase</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- Tabel Riwayat Real-Time (Kanan) -->
+      <div class="lg:col-span-7 bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h2 class="text-base font-extrabold text-slate-900">Riwayat Transaksi Realtime</h2>
+            <p class="text-xs text-slate-500">Pembaruan instan antar perangkat via Firestore onSnapshot</p>
+          </div>
+          <!-- Filter Sederhana -->
+          <select id="filterStatus" class="px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none">
+            <option value="ALL">Semua Transaksi</option>
+            <option value="APPROVED">Hanya Approved</option>
+            <option value="PENDING">Hanya Pending Approval</option>
+          </select>
+        </div>
+
+        <!-- Tabel Transaksi -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-slate-200 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                <th class="py-2.5 px-2">Tanggal / Waktu</th>
+                <th class="py-2.5 px-2">Keterangan</th>
+                <th class="py-2.5 px-2 text-right">Tagihan</th>
+                <th class="py-2.5 px-2 text-right">Diterima</th>
+                <th class="py-2.5 px-2 text-right">Selisih</th>
+                <th class="py-2.5 px-2 text-center">Status</th>
+                <th class="py-2.5 px-2 text-center">Aksi Admin</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody" class="divide-y divide-slate-100 font-medium">
+              <tr>
+                <td colspan="7" class="py-8 text-center text-slate-400">
+                  <div class="flex flex-col items-center justify-center gap-2">
+                    <span class="animate-spin text-xl">⏳</span>
+                    <span>Memuat data transaksi dari Firestore...</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="max-w-6xl mx-auto px-4 py-4 text-center text-xs text-slate-400 border-t border-slate-200 w-full">
+    Aplikasi Pencatatan Transaksi Realtime &bull; Vanilla JS + Tailwind CSS + Firebase Firestore &bull; Siap Publish ke Vercel
+  </footer>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT NATIVE & INISIALISASI FIREBASE VIA CDN (ESM) -->
+  <!-- ======================================================== -->
+  <script type="module">
+    // Import modul Firebase SDK versi 10 via CDN esm.sh / gstatic
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { 
+      getFirestore, 
+      collection, 
+      addDoc, 
+      onSnapshot, 
+      query, 
+      orderBy, 
+      doc, 
+      updateDoc, 
+      deleteDoc, 
+      serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // ----------------------------------------------------
+    // 1. KONFIGURASI FIREBASE (Ganti dengan config Anda)
+    // ----------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyYOUR_API_KEY_HERE",
+      authDomain: "your-app.firebaseapp.com",
+      projectId: "your-app-id",
+      storageBucket: "your-app.appspot.com",
+      messagingSenderId: "1234567890",
+      appId: "1:1234567890:web:abcdef123456"
+    };
+
+    // Inisialisasi Firebase App & Firestore Database
+    let db = null;
+    let unsubscribeListener = null;
+    let allTransactions = [];
+
+    // Helper format mata uang rupiah
+    const formatRupiah = (num) => {
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        maximumFractionDigits: 0
+      }).format(num || 0);
+    };
+
+    // Helper format waktu
+    const formatTanggal = (timestamp) => {
+      if (!timestamp) return '-';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleDateString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+
+    // Elemen DOM
+    const inputKeterangan = document.getElementById('inputKeterangan');
+    const inputTotalTagihan = document.getElementById('inputTotalTagihan');
+    const inputUangTunai = document.getElementById('inputUangTunai');
+    const inputUangNonTunai = document.getElementById('inputUangNonTunai');
+    const calcTotalUang = document.getElementById('calcTotalUang');
+    const calcSelisih = document.getElementById('calcSelisih');
+    const calcStatusBadge = document.getElementById('calcStatusBadge');
+    const formTransaksi = document.getElementById('formTransaksi');
+    const btnSubmit = document.getElementById('btnSubmit');
+
+    const statDanaMasuk = document.getElementById('statDanaMasuk');
+    const statPendingCount = document.getElementById('statPendingCount');
+    const statPendingNominal = document.getElementById('statPendingNominal');
+    const statTotalCount = document.getElementById('statTotalCount');
+    const statTotalTarget = document.getElementById('statTotalTarget');
+    const tableBody = document.getElementById('tableBody');
+    const filterStatus = document.getElementById('filterStatus');
+
+    const connectionDot = document.getElementById('connectionDot');
+    const connectionText = document.getElementById('connectionText');
+
+    // ----------------------------------------------------
+    // 2. LOGIKA KALKULASI SELISIH & PREDIKSI AUTO-APPROVAL
+    // ----------------------------------------------------
+    function hitungLive() {
+      const tagihan = parseFloat(inputTotalTagihan.value) || 0;
+      const tunai = parseFloat(inputUangTunai.value) || 0;
+      const nonTunai = parseFloat(inputUangNonTunai.value) || 0;
+
+      const totalDiterima = tunai + nonTunai;
+      const selisih = totalDiterima - tagihan;
+
+      calcTotalUang.textContent = formatRupiah(totalDiterima);
+      
+      // Update tampilan selisih
+      if (selisih === 0) {
+        calcSelisih.textContent = 'Rp 0 (Pas)';
+        calcSelisih.className = 'font-mono font-bold text-emerald-600';
+        calcStatusBadge.textContent = '✓ AUTO-APPROVED';
+        calcStatusBadge.className = 'px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase bg-emerald-100 text-emerald-800';
+      } else if (selisih > 0) {
+        calcSelisih.textContent = `+${formatRupiah(selisih)} (Lebih)`;
+        calcSelisih.className = 'font-mono font-bold text-amber-600';
+        calcStatusBadge.textContent = '⏳ PENDING APPROVAL (Ada Lebih)';
+        calcStatusBadge.className = 'px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase bg-amber-100 text-amber-800';
+      } else {
+        calcSelisih.textContent = `${formatRupiah(selisih)} (Kurang)`;
+        calcSelisih.className = 'font-mono font-bold text-rose-600';
+        calcStatusBadge.textContent = '⏳ PENDING APPROVAL (Kurang)';
+        calcStatusBadge.className = 'px-2.5 py-1 rounded-md text-[11px] font-extrabold uppercase bg-rose-100 text-rose-800';
+      }
+
+      return { tagihan, tunai, nonTunai, totalDiterima, selisih };
+    }
+
+    // Pasang listener input
+    [inputTotalTagihan, inputUangTunai, inputUangNonTunai].forEach(el => {
+      el.addEventListener('input', hitungLive);
+    });
+
+    // ----------------------------------------------------
+    // 3. INISIALISASI & KONEKSI KE FIRESTORE
+    // ----------------------------------------------------
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+
+      connectionDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500';
+      connectionText.textContent = 'Firestore Realtime Aktif';
+
+      // Mulai mendengarkan data real-time
+      startRealtimeListener();
+    } catch (err) {
+      console.warn("Firebase config placeholder digunakan. Data tersimpan di memory / fallback mode:", err);
+      connectionDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500';
+      connectionText.textContent = 'Demo Mode (Isi config Firebase Anda)';
+      renderTabel([]);
+    }
+
+    // ----------------------------------------------------
+    // 4. LISTENER REALTIME: onSnapshot
+    // ----------------------------------------------------
+    function startRealtimeListener() {
+      if (!db) return;
+
+      const q = query(collection(db, "transaksi"), orderBy("createdAt", "desc"));
+
+      // onSnapshot akan terpanggil secara real-time setiap kali ada penambahan,
+      // perubahan (misal: approval admin), atau penghapusan data tanpa reload halaman!
+      unsubscribeListener = onSnapshot(q, (snapshot) => {
+        allTransactions = [];
+        snapshot.forEach((docSnap) => {
+          allTransactions.push({
+            id: docSnap.id,
+            ...docSnap.data()
+          });
+        });
+
+        // Hitung ulang indikator & render tabel
+        updateSummary(allTransactions);
+        applyFilterAndRender();
+      }, (error) => {
+        console.error("Gagal mendengarkan data realtime:", error);
+        tableBody.innerHTML = `<tr><td colspan="7" class="py-6 text-center text-rose-500 text-xs font-semibold">Gagal memuat data dari Firestore: ${error.message}</td></tr>`;
+      });
+    }
+
+    // ----------------------------------------------------
+    // 5. UPDATE INDIKATOR REAL-TIME DANA MASUK
+    // ----------------------------------------------------
+    function updateSummary(transactions) {
+      let totalDanaMasuk = 0;
+      let totalPendingNominal = 0;
+      let pendingCount = 0;
+      let totalTarget = 0;
+
+      transactions.forEach(t => {
+        totalTarget += (t.totalTagihan || 0);
+
+        if (t.status === "APPROVED") {
+          // Hanya transaksi yang APPROVED yang dihitung ke Dana Masuk
+          totalDanaMasuk += (t.totalDiterima || 0);
+        } else if (t.status === "PENDING APPROVAL") {
+          pendingCount += 1;
+          totalPendingNominal += (t.totalDiterima || 0);
+        }
+      });
+
+      statDanaMasuk.textContent = formatRupiah(totalDanaMasuk);
+      statPendingCount.textContent = `${pendingCount} Transaksi`;
+      statPendingNominal.textContent = `Total: ${formatRupiah(totalPendingNominal)}`;
+      statTotalCount.textContent = transactions.length;
+      statTotalTarget.textContent = `Target Keseluruhan: ${formatRupiah(totalTarget)}`;
+    }
+
+    // ----------------------------------------------------
+    // 6. RENDER TABEL & FILTER
+    // ----------------------------------------------------
+    function applyFilterAndRender() {
+      const filter = filterStatus.value;
+      let filtered = allTransactions;
+
+      if (filter === "APPROVED") {
+        filtered = allTransactions.filter(t => t.status === "APPROVED");
+      } else if (filter === "PENDING") {
+        filtered = allTransactions.filter(t => t.status === "PENDING APPROVAL");
+      }
+
+      renderTabel(filtered);
+    }
+
+    filterStatus.addEventListener('change', applyFilterAndRender);
+
+    function renderTabel(list) {
+      if (!list || list.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-slate-400 text-xs">
+              Belum ada data transaksi tercatat.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tableBody.innerHTML = list.map(t => {
+        const isApproved = t.status === "APPROVED";
+        const selisih = t.selisih || 0;
+
+        let badgeStatus = '';
+        if (isApproved) {
+          badgeStatus = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-100 text-emerald-800">APPROVED</span>`;
+        } else {
+          badgeStatus = `<span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-amber-100 text-amber-800">PENDING</span>`;
+        }
+
+        let selisihColor = 'text-slate-700';
+        if (selisih > 0) selisihColor = 'text-amber-600';
+        if (selisih < 0) selisihColor = 'text-rose-600';
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition-colors">
+            <td class="py-2.5 px-2 text-slate-500 whitespace-nowrap text-[11px] font-mono">
+              ${formatTanggal(t.createdAt)}
+            </td>
+            <td class="py-2.5 px-2 font-bold text-slate-800">
+              ${t.keterangan || '-'}
+              <div class="text-[10px] text-slate-400 font-normal">
+                Cash: ${formatRupiah(t.uangTunai)} | Non-Tunai: ${formatRupiah(t.uangNonTunai)}
+              </div>
+            </td>
+            <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-700">
+              ${formatRupiah(t.totalTagihan)}
+            </td>
+            <td class="py-2.5 px-2 text-right font-mono font-bold text-slate-900">
+              ${formatRupiah(t.totalDiterima)}
+            </td>
+            <td class="py-2.5 px-2 text-right font-mono font-bold ${selisihColor}">
+              ${selisih > 0 ? '+' : ''}${formatRupiah(selisih)}
+            </td>
+            <td class="py-2.5 px-2 text-center whitespace-nowrap">
+              ${badgeStatus}
+            </td>
+            <td class="py-2.5 px-2 text-center whitespace-nowrap">
+              ${!isApproved ? `
+                <button 
+                  data-id="${t.id}"
+                  class="btn-approve px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md text-[10px] font-extrabold shadow-xs transition-colors cursor-pointer mr-1"
+                  title="Setujui transaksi ini"
+                >
+                  ✓ Approve
+                </button>
+              ` : `
+                <span class="text-slate-400 text-[11px] font-mono">Tersinkron</span>
+              `}
+              <button 
+                data-id="${t.id}"
+                class="btn-delete p-1 text-slate-400 hover:text-rose-600 rounded text-xs transition-colors cursor-pointer ml-1"
+                title="Hapus Transaksi"
+              >
+                ✕
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Pasang event listener tombol aksi Approve dan Delete
+      document.querySelectorAll('.btn-approve').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          await handleApprove(id);
+        });
+      });
+
+      document.querySelectorAll('.btn-delete').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.getAttribute('data-id');
+          await handleDelete(id);
+        });
+      });
+    }
+
+    // ----------------------------------------------------
+    // 7. SUBMIT FORM: MENYIMPAN TRANSAKSI KE FIRESTORE
+    // ----------------------------------------------------
+    formTransaksi.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const { tagihan, tunai, nonTunai, totalDiterima, selisih } = hitungLive();
+      const keterangan = inputKeterangan.value.trim();
+
+      if (!keterangan || tagihan <= 0) {
+        alert("Harap masukkan keterangan dan total tagihan yang valid!");
+        return;
+      }
+
+      // Logika Penentuan Status:
+      // JIKA SELISIH === 0 -> "APPROVED" (Langsung masuk ke Total Dana Masuk)
+      // JIKA SELISIH !== 0 -> "PENDING APPROVAL" (Menunggu persetujuan admin)
+      const isPas = (selisih === 0);
+      const status = isPas ? "APPROVED" : "PENDING APPROVAL";
+      const approvalType = isPas ? "AUTO_APPROVED" : "MANUAL_REQUIRED";
+
+      const dataPayload = {
+        keterangan: keterangan,
+        totalTagihan: tagihan,
+        uangTunai: tunai,
+        uangNonTunai: nonTunai,
+        totalDiterima: totalDiterima,
+        selisih: selisih,
+        status: status,
+        approvalType: approvalType,
+        approvedAt: isPas ? new Date().toISOString() : null,
+        approvedBy: isPas ? "SYSTEM_AUTO" : null,
+        createdAt: serverTimestamp ? serverTimestamp() : new Date().toISOString()
+      };
+
+      try {
+        btnSubmit.disabled = true;
+        btnSubmit.textContent = "Menyimpan ke Firebase...";
+
+        if (db) {
+          // Simpan langsung ke koleksi Firestore "transaksi"
+          await addDoc(collection(db, "transaksi"), dataPayload);
+        } else {
+          // Fallback lokal jika config belum diisi
+          allTransactions.unshift({
+            id: 'mock-' + Date.now(),
+            ...dataPayload,
+            createdAt: new Date().toISOString()
+          });
+          updateSummary(allTransactions);
+          applyFilterAndRender();
+        }
+
+        // Reset form
+        formTransaksi.reset();
+        inputTotalTagihan.value = '';
+        inputUangTunai.value = '0';
+        inputUangNonTunai.value = '0';
+        hitungLive();
+
+      } catch (err) {
+        console.error("Gagal menyimpan transaksi:", err);
+        alert("Terjadi kesalahan saat menyimpan ke Firebase: " + err.message);
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.textContent = "Simpan Transaksi ke Firebase";
+      }
+    });
+
+    // ----------------------------------------------------
+    // 8. FUNGSI ADMIN APPROVE (Real-Time Update)
+    // ----------------------------------------------------
+    async function handleApprove(id) {
+      if (!confirm("Setujui transaksi berselisih ini? Setelah disetujui, dana akan langsung masuk ke Total Dana Masuk.")) return;
+
+      try {
+        if (db) {
+          const docRef = doc(db, "transaksi", id);
+          await updateDoc(docRef, {
+            status: "APPROVED",
+            approvedAt: new Date().toISOString(),
+            approvedBy: "ADMIN_MANUAL"
+          });
+        } else {
+          // Demo fallback
+          const item = allTransactions.find(t => t.id === id);
+          if (item) {
+            item.status = "APPROVED";
+            item.approvedAt = new Date().toISOString();
+            item.approvedBy = "ADMIN_MANUAL";
+            updateSummary(allTransactions);
+            applyFilterAndRender();
+          }
+        }
+      } catch (err) {
+        console.error("Gagal approve transaksi:", err);
+        alert("Gagal menyetujui transaksi: " + err.message);
+      }
+    }
+
+    // ----------------------------------------------------
+    // 9. FUNGSI HAPUS TRANSAKSI
+    // ----------------------------------------------------
+    async function handleDelete(id) {
+      if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
+
+      try {
+        if (db) {
+          await deleteDoc(doc(db, "transaksi", id));
+        } else {
+          allTransactions = allTransactions.filter(t => t.id !== id);
+          updateSummary(allTransactions);
+          applyFilterAndRender();
+        }
+      } catch (err) {
+        console.error("Gagal menghapus transaksi:", err);
+        alert("Gagal menghapus transaksi: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

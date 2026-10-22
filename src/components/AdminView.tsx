@@ -33,7 +33,10 @@ import {
   Key,
   Menu,
   X,
-  LogOut
+  LogOut,
+  UserX,
+  UserCheck,
+  Shield
 } from 'lucide-react';
 import {
   BarChart,
@@ -96,6 +99,7 @@ export function AdminView({
     logAuditAction,
     addCashierAccount,
     deleteCashierAccount,
+    toggleCashierStatus,
     logout
   } = useAuth();
 
@@ -175,28 +179,35 @@ export function AdminView({
     }
   };
 
+  const handleToggleStatus = async (id: string, name: string, currentActive: boolean) => {
+    const nextActive = !currentActive;
+    try {
+      await toggleCashierStatus(id, nextActive);
+      setCashiers((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, isActive: nextActive, status: nextActive ? 'active' : 'disabled' } : c))
+      );
+      setCashierSuccessMsg(
+        nextActive
+          ? `Akun kasir "${name}" berhasil diaktifkan kembali.`
+          : `Akun kasir "${name}" dinonaktifkan. Sesi aktif langsung dicabut secara real-time!`
+      );
+      setTimeout(() => setCashierSuccessMsg(null), 4000);
+    } catch (err: any) {
+      setCashierErrorMsg(err.message || 'Gagal mengubah status kasir.');
+      setTimeout(() => setCashierErrorMsg(null), 4000);
+    }
+  };
+
   const handleDeleteKasir = async (id: string, name: string) => {
-    console.log('Tombol hapus diklik untuk ID:', id);
-    if (!window.confirm(`Hapus akun kasir "${name}"? Kasir ini tidak akan dapat login lagi.`)) {
+    if (!window.confirm(`Hapus akun kasir "${name}" secara permanen?\nSesi kasir akan langsung dihentikan dan akses login diblokir total.`)) {
       return;
     }
 
     try {
-      // 1. Hapus langsung dokumen user dari Firestore
-      await deleteDoc(doc(db, 'users', id));
-      
-      // 2. Perbarui state lokal secara instan
+      await deleteCashierAccount(id, name);
       setCashiers((prev) => prev.filter((c) => c.id !== id));
-      
-      // 3. Feedback notifikasi sukses
-      setCashierSuccessMsg(`Akun kasir "${name}" berhasil dihapus.`);
-      setTimeout(() => setCashierSuccessMsg(null), 3000);
-
-      // 4. Catat audit log
-      await logAuditAction(
-        'HAPUS_KASIR',
-        `Admin menghapus akun kasir: ${name} (ID: ${id})`
-      );
+      setCashierSuccessMsg(`Akun kasir "${name}" berhasil dihapus dan sesi aktifnya langsung dicabut.`);
+      setTimeout(() => setCashierSuccessMsg(null), 4000);
     } catch (err: any) {
       console.error('Error deleting cashier:', err);
       setCashierErrorMsg('Gagal menghapus kasir: ' + (err.message || String(err)));
@@ -1299,63 +1310,123 @@ export function AdminView({
                     Belum ada kasir yang terdaftar di Firestore.
                   </div>
                 ) : (
-                  cashiers.map((c) => (
-                    <div
-                      key={c.id}
-                      className="py-3 px-2 flex items-center justify-between hover:bg-slate-50/80 rounded-lg transition-colors border-b border-slate-100 last:border-b-0"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-bold text-xs text-slate-900">{c.displayName}</p>
-                          <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
-                            Shift {c.shift || 'Pagi'}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 font-mono">{c.email}</p>
-                        
-                        {/* Admin Password View with Show/Hide Toggle */}
-                        <div className="flex items-center gap-1.5 pt-0.5">
-                          <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
-                            <Key className="w-3 h-3 text-amber-500" />
-                            Password:
-                          </span>
-                          <span className="text-[11px] font-mono text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                            {visiblePasswords[c.id] ? (c.passwordHint || 'Tersimpan (Enkripsi)') : '••••••'}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setVisiblePasswords((prev) => ({ ...prev, [c.id]: !prev[c.id] }));
-                            }}
-                            className="text-slate-400 hover:text-purple-600 transition-colors p-0.5 rounded cursor-pointer"
-                            title={visiblePasswords[c.id] ? 'Sembunyikan Password' : 'Lihat Password'}
-                            aria-label="Toggle password view"
-                          >
-                            {visiblePasswords[c.id] ? <EyeOff size={13} /> : <Eye size={13} />}
-                          </button>
-                        </div>
-                      </div>
+                    cashiers.map((c) => {
+                      const isAccountActive = c.isActive !== false && c.status !== 'disabled';
+                      return (
+                        <div
+                          key={c.id}
+                          className={`py-3 px-2.5 flex items-center justify-between rounded-xl transition-colors border mb-1.5 last:mb-0 ${
+                            isAccountActive
+                              ? 'bg-white hover:bg-slate-50/90 border-slate-100'
+                              : 'bg-rose-50/40 hover:bg-rose-50/70 border-rose-100'
+                          }`}
+                        >
+                          <div className="space-y-1 min-w-0 flex-1 pr-2">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              <p className="font-bold text-xs text-slate-900 truncate">{c.displayName}</p>
+                              <span className="inline-block text-[9px] font-semibold px-1.5 py-0.2 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                                Shift {c.shift || 'Pagi'}
+                              </span>
+                              {isAccountActive ? (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  <UserCheck className="w-2.5 h-2.5" /> Aktif
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[9px] font-extrabold px-1.5 py-0.2 rounded-md bg-rose-100 text-rose-800 border border-rose-200">
+                                  <UserX className="w-2.5 h-2.5" /> Dinonaktifkan
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-mono truncate">{c.email}</p>
+                            
+                            {/* Admin Password View with Show/Hide Toggle */}
+                            <div className="flex items-center gap-1.5 pt-0.5">
+                              <span className="text-[10px] font-semibold text-slate-400 flex items-center gap-1">
+                                <Key className="w-3 h-3 text-amber-500" />
+                                Password:
+                              </span>
+                              <span className="text-[11px] font-mono text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                                {visiblePasswords[c.id] ? (c.passwordHint || 'Tersimpan (Enkripsi)') : '••••••'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setVisiblePasswords((prev) => ({ ...prev, [c.id]: !prev[c.id] }));
+                                }}
+                                className="text-slate-400 hover:text-purple-600 transition-colors p-0.5 rounded cursor-pointer"
+                                title={visiblePasswords[c.id] ? 'Sembunyikan Password' : 'Lihat Password'}
+                                aria-label="Toggle password view"
+                              >
+                                {visiblePasswords[c.id] ? <EyeOff size={13} /> : <Eye size={13} />}
+                              </button>
+                            </div>
+                          </div>
 
-                      {/* Tombol Hapus dengan event stopPropagation dan feedback instan */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteKasir(c.id, c.displayName || c.email);
-                        }}
-                        className="text-rose-600 hover:text-rose-800 p-2 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer shrink-0 ml-2"
-                        title="Hapus Kasir"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))
-                )}
+                          {/* Tombol Aksi Status & Hapus */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            {/* Tombol Soft-Delete / Toggle Status */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleStatus(c.id, c.displayName || c.email, isAccountActive);
+                              }}
+                              className={`p-1.5 sm:px-2.5 sm:py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer shrink-0 ${
+                                isAccountActive
+                                  ? 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                                  : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                              }`}
+                              title={isAccountActive ? 'Nonaktifkan Akun (Cabut sesi login kasir langsung)' : 'Aktifkan Kembali'}
+                            >
+                              {isAccountActive ? (
+                                <>
+                                  <UserX className="w-3 h-3 text-amber-600" />
+                                  <span className="hidden sm:inline">Nonaktifkan</span>
+                                </>
+                              ) : (
+                                <>
+                                  <UserCheck className="w-3 h-3 text-emerald-600" />
+                                  <span className="hidden sm:inline">Aktifkan</span>
+                                </>
+                              )}
+                            </button>
+
+                            {/* Tombol Hapus Permanen */}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteKasir(c.id, c.displayName || c.email);
+                              }}
+                              className="text-rose-600 hover:text-rose-800 p-1.5 rounded-lg hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors cursor-pointer shrink-0"
+                              title="Hapus Kasir Permanen"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Security Best Practice Notice Box */}
+                <div className="mt-3 p-3 bg-purple-50/70 border border-purple-200/80 rounded-xl text-[11px] text-purple-900 space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-purple-900">
+                    <Shield className="w-3.5 h-3.5 text-purple-700" />
+                    <span>Keamanan Akun &amp; Pembatalan Sesi (Real-Time Auth Guard)</span>
+                  </div>
+                  <p className="text-purple-800/90 leading-relaxed">
+                    • <strong>Nonaktifkan (Soft Delete)</strong>: Mempertahankan data transaksi lama pada laporan keuangan, namun langsung memutuskan sesi login kasir yang sedang aktif secara <em>real-time</em> dan memblokir login kembali.
+                  </p>
+                  <p className="text-purple-800/90 leading-relaxed">
+                    • <strong>Hapus Permanen</strong>: Menghapus profil dari database dan mencabut token otentikasi kasir.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
-        </div>
       )}
 
       {/* 5. LAPORAN PERIODIK (Harian, Mingguan, Bulanan, Tahunan) */}

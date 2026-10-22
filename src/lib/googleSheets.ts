@@ -102,6 +102,17 @@ function doPost(e) {
         data.title || data.notes || '',
         Number(data.amount) || 0
       ]);
+    } else if (data.type === 'revoke_user') {
+      var sheetBlacklist = ss.getSheetByName('Kasir Nonaktif') || ss.insertSheet('Kasir Nonaktif');
+      if (sheetBlacklist.getLastRow() === 0) {
+        sheetBlacklist.appendRow([
+          'Timestamp', 'UID Kasir', 'Nama Kasir', 'Status', 'Keterangan'
+        ]);
+        sheetBlacklist.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#991B1B').setFontColor('#FFFFFF');
+      }
+      sheetBlacklist.appendRow([
+        new Date(), data.uid || '', data.cashierName || '', 'NONAKTIF / REVOKED', data.reason || 'Sesi dicabut oleh Admin'
+      ]);
     }
 
     return ContentService
@@ -125,7 +136,7 @@ function doGet(e) {
 // Post transaction data to Webhook URL
 export async function sendToGoogleSheetsWebhook(
   webhookUrl: string,
-  payload: { type: 'closing' | 'expense' | 'export_all' } & Record<string, any>
+  payload: { type: 'closing' | 'expense' | 'export_all' | 'revoke_user' } & Record<string, any>
 ): Promise<{ success: boolean; message?: string }> {
   if (!webhookUrl || !webhookUrl.startsWith('http')) {
     return { success: false, message: 'URL Webhook Google Sheets belum diatur.' };

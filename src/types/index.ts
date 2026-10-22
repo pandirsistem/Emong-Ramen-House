@@ -7,6 +7,9 @@ export interface UserProfile {
   role: UserRole;
   shift?: ShiftType;
   isActive?: boolean;
+  status?: 'active' | 'disabled';
+  disabledAt?: string;
+  deletedAt?: string;
   passwordHint?: string;
   createdAt: string;
 }

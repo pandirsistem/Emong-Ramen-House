@@ -16,7 +16,7 @@ body {
   font-family: 'Plus Jakarta Sans', sans-serif;
   
   /* BACKGROUND FOTO RAMEN HOUSE 100% TAJAM & JERNIH */
-  background: url('./assets/images/pwa_icon_ramenhouse_bg.jpg') no-repeat center center fixed !important;
+  background: #7f1d1d url('/ramen-bg.jpg') no-repeat center center fixed !important;
   background-size: cover !important;
   color: #0f172a;
   overscroll-behavior-y: none;

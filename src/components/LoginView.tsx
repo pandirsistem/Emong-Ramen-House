@@ -11,17 +11,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-// IMPORT ASSETS
-import logoBuhun from '../assets/images/pwa_icon_1792480156073.jpg';
-import ramenBg from '../assets/images/pwa_icon_ramenhouse_bg.jpg';
-
 export function LoginView() {
-  const { loginWithEmailOrUsername, settings } = useAuth();
+  const { loginWithEmailOrUsername, settings, authSecurityError, clearAuthSecurityError } = useAuth();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [logoSrc, setLogoSrc] = useState('/logo.png');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +50,8 @@ export function LoginView() {
     <div 
       className="min-h-[100dvh] w-full max-w-full overflow-x-hidden flex flex-col justify-between p-4 sm:p-6 lg:p-8 relative bg-cover bg-center bg-fixed"
       style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(15, 5, 8, 0.78), rgba(15, 5, 8, 0.88)), url(${ramenBg})`
+        backgroundColor: '#7f1d1d',
+        backgroundImage: `linear-gradient(to bottom, rgba(15, 5, 8, 0.78), rgba(15, 5, 8, 0.88)), url('/ramen-bg.jpg')`
       }}
     >
       {/* Top Banner / Store Contact */}
@@ -77,12 +75,17 @@ export function LoginView() {
       <div className="w-full max-w-md mx-auto my-auto py-6 z-10">
         <div className="bg-white/95 backdrop-blur-xl border border-rose-900/30 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black">
           
-          {/* Brand Header (Teks Dibuat Hitam Pekat) */}
+          {/* Brand Header */}
           <div className="text-center mb-6">
             <div className="inline-block p-1 rounded-2xl bg-gradient-to-b from-amber-400 to-red-600 shadow-xl mb-3">
               <img 
-                src={logoBuhun} 
+                src={logoSrc} 
                 alt="Buhun Ramen House" 
+                onError={() => {
+                  if (logoSrc !== '/logo.svg') {
+                    setLogoSrc('/logo.svg');
+                  }
+                }}
                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl object-cover border-2 border-red-950 shadow-inner" 
               />
             </div>
@@ -102,6 +105,26 @@ export function LoginView() {
               Silakan login dengan akun Admin atau Kasir untuk melanjutkan
             </p>
           </div>
+
+          {/* Security Alert (Session Revoked / Deactivated Account) */}
+          {authSecurityError && (
+            <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 text-amber-200 text-xs flex items-start justify-between gap-2.5 shadow-lg shadow-amber-950/40">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
+                <div className="space-y-0.5">
+                  <p className="font-bold text-amber-300">Pemberitahuan Keamanan:</p>
+                  <p className="leading-relaxed text-amber-200/90">{authSecurityError}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={clearAuthSecurityError}
+                className="text-amber-400/80 hover:text-amber-200 text-[10px] underline ml-1 shrink-0 cursor-pointer"
+              >
+                Tutup
+              </button>
+            </div>
+          )}
 
           {/* Error Alert */}
           {errorMsg && (

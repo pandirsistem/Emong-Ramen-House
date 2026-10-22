@@ -26,8 +26,6 @@ import { PWAInstallButton } from './PWAInstallButton';
 import { ClosingRecord, ExpenseRecord } from '../types';
 import { exportAllToGoogleSheets } from '../lib/googleSheets';
 
-import logoBuhun from '../assets/images/pwa_icon_1792480156073.jpg';
-
 interface HeaderProps {
   onOpenVoice: () => void;
   onOpenGuide: () => void;
@@ -78,8 +76,9 @@ export function Header({
         {/* Logo & Store Branding */}
         <div className="flex items-center gap-2 min-w-0 flex-1 sm:flex-initial">
           <img 
-            src={logoBuhun} 
+            src="/logo.png" 
             alt="Buhun Ramen House" 
+            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/logo.svg'; }}
             className="w-8 h-8 sm:w-10 sm:h-10 shrink-0 rounded-lg sm:rounded-xl object-cover border border-amber-500/40 shadow-sm" 
           />
 

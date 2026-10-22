@@ -2,7 +2,7 @@
 import { initializeApp, getApps, getApp, deleteApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, createUserWithEmailAndPassword, updateProfile, signOut } from 'firebase/auth';
 import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+import fallbackConfig from '../../firebase-applet-config.json';
 
 export enum OperationType {
   CREATE = 'create',
@@ -30,9 +30,25 @@ export interface FirestoreErrorInfo {
   };
 }
 
+// Support both Vercel / external Vite environment variables AND fallback applet config
+export const firebaseConfig = {
+  apiKey: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_API_KEY) || fallbackConfig.apiKey || 'AIzaSyD_52dxVTtX7BauRwabPI102mtw_MkPSWA',
+  authDomain: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_AUTH_DOMAIN) || fallbackConfig.authDomain || 'macro-respect-rjf39.firebaseapp.com',
+  projectId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_PROJECT_ID) || fallbackConfig.projectId || 'macro-respect-rjf39',
+  storageBucket: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_STORAGE_BUCKET) || fallbackConfig.storageBucket || 'macro-respect-rjf39.firebasestorage.app',
+  messagingSenderId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_MESSAGING_SENDER_ID) || fallbackConfig.messagingSenderId || '478819153245',
+  appId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_APP_ID) || fallbackConfig.appId || '1:478819153245:web:8bc0c61477fa45eaf364b4',
+  firestoreDatabaseId: (typeof import.meta !== 'undefined' && import.meta.env?.VITE_FIREBASE_DATABASE_ID) || fallbackConfig.firestoreDatabaseId || 'ai-studio-bukukasprokeuang-bb99bdfd-9379-4cf2-9f84-a896dcf6c08e',
+};
+
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+export const db = getFirestore(
+  app,
+  firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)'
+    ? firebaseConfig.firestoreDatabaseId
+    : undefined
+);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
