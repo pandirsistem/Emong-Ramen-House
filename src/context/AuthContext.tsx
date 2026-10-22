@@ -62,15 +62,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const unsubscribeAuth = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setCurrentUser(user);
         try {
           const userDocRef = doc(db, 'users', user.uid);
           const userSnap = await getDoc(userDocRef);
 
-          let role: UserRole = 'cashier';
           const email = (user.email || '').toLowerCase();
-          // Admin designated email matching firman or master email
-          const isMasterAdmin = email === 'firman@emongramen.com' || email === 'pandircmss@gmail.com' || email.startsWith('admin');
+          const isMasterAdmin =
+            email === 'firman@emongramen.com' ||
+            email === 'pandircmss@gmail.com' ||
+            email.startsWith('admin');
+
+          // STRICT LOGOUT GUARD:
+          // Jika dokumen pengguna tidak ada di Firestore (sudah dihapus Admin) dan bukan Master Admin,
+          // paksa logout pengguna secara otomatis.
+          if (!userSnap.exists() && !isMasterAdmin) {
+            await signOut(auth);
+            setCurrentUser(null);
+            setUserProfile(null);
+            setLoading(false);
+            return;
+          }
+
+          setCurrentUser(user);
+
+          let role: UserRole = 'cashier';
           if (isMasterAdmin) {
             role = 'admin';
             try {
@@ -92,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             (role === 'admin'
               ? 'Firman (Admin Utama)'
               : user.email
-                ? (user.email.split('@')[0] === 'kasir' || user.email.split('@')[0] === 'risma' ? user.email.split('@')[0] : 'Emong Kasir')
+                ? user.email.split('@')[0]
                 : 'Emong Kasir');
 
           const profile: UserProfile = {
@@ -105,7 +120,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             createdAt: userDbData?.createdAt || new Date().toISOString()
           };
 
-          if (!userSnap.exists()) {
+          if (!userSnap.exists() && isMasterAdmin) {
             await setDoc(userDocRef, profile, { merge: true });
           }
 
@@ -115,11 +130,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to load user profile from Firestore:', err);
           const email = (user.email || '').toLowerCase();
           const isMasterAdmin = email === 'firman@emongramen.com' || email === 'pandircmss@gmail.com';
+          
+          if (!isMasterAdmin) {
+            await signOut(auth);
+            setCurrentUser(null);
+            setUserProfile(null);
+            setLoading(false);
+            return;
+          }
+
           setUserProfile({
             id: user.uid,
             email: user.email || 'firman@emongramen.com',
-            displayName: user.displayName || (isMasterAdmin ? 'Firman (Admin Utama)' : 'Emong Kasir'),
-            role: isMasterAdmin ? 'admin' : 'cashier',
+            displayName: user.displayName || 'Firman (Admin Utama)',
+            role: 'admin',
             createdAt: new Date().toISOString()
           });
           setLoading(false);
@@ -184,7 +208,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       candidateEmails.push(`${raw}@emongramen.com`);
       candidateEmails.push(`${raw}@ramenhouse.com`);
     } else if (!raw.includes('.')) {
-      // e.g. risma@ramenhouse -> risma@ramenhouse.com
       candidateEmails.push(`${raw}.com`);
       candidateEmails.push(`${raw.split('@')[0]}@emongramen.com`);
     } else {
@@ -212,10 +235,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           emailLower === 'pandircmss@gmail.com' ||
           emailLower.startsWith('admin');
 
-        // Validate role from Firestore
+        // Validate user existence and role from Firestore
         const userSnap = await getDoc(doc(db, 'users', res.user.uid));
-        const userRole = userSnap.data()?.role;
+        if (!userSnap.exists() && !isMasterAdmin) {
+          await signOut(auth);
+          throw new Error('Akun Anda telah dihapus oleh Admin.');
+        }
 
+        const userRole = userSnap.data()?.role;
         if (!isMasterAdmin && userRole !== 'admin' && userRole !== 'cashier' && userRole !== 'kasir') {
           await signOut(auth);
           throw new Error('Akun Anda tidak memiliki hak akses ke sistem kasir.');
@@ -225,7 +252,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         break;
       } catch (err: any) {
         lastError = err;
-        if (err.message && err.message.includes('tidak memiliki hak akses')) {
+        if (err.message && (err.message.includes('tidak memiliki hak akses') || err.message.includes('telah dihapus'))) {
           throw err;
         }
       }
@@ -255,9 +282,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.warn('Auto-bootstrap admin error:', adminCreateErr);
       }
     }
-
-    // Auto-bootstrap requested cashier Risma if not created in Firebase Auth yet
-    
 
     if (!loggedIn) {
       console.warn('Login attempt failed for identifier:', identifier);
@@ -290,7 +314,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.warn('Google Sign-in warning:', err);
       throw err;
-    } finally {
+    } fontally {
       setLoading(false);
     }
   };
