@@ -13,8 +13,7 @@ import {
   ExpenseRecord,
   ShiftType
 } from './types';
-import { INITIAL_AUDIT_LOGS, INITIAL_CLOSINGS, INITIAL_EXPENSES } from './lib/mockData';
-import { db, handleFirestoreError, OperationType } from './lib/firebase';
+import { db } from './lib/firebase';
 import {
   collection,
   onSnapshot,
@@ -40,56 +39,10 @@ const dedupeById = <T extends { id: string }>(items: T[]): T[] => {
 function MainContent() {
   const { role, isAdmin, isCashier, userProfile, loading } = useAuth();
 
-  const [closings, setClosings] = useState<ClosingRecord[]>(() => {
-    const saved = localStorage.getItem('bukukas_closings');
-    if (saved) {
-      try {
-        const parsed: ClosingRecord[] = JSON.parse(saved);
-        if (parsed.some((c) => c.id && c.id.startsWith('cls_'))) {
-          localStorage.removeItem('bukukas_closings');
-          return [];
-        }
-        return dedupeById(parsed);
-      } catch (e) {
-        return [];
-      }
-    }
-    return INITIAL_CLOSINGS;
-  });
-
-  const [expenses, setExpenses] = useState<ExpenseRecord[]>(() => {
-    const saved = localStorage.getItem('bukukas_expenses');
-    if (saved) {
-      try {
-        const parsed: ExpenseRecord[] = JSON.parse(saved);
-        if (parsed.some((e) => e.id && e.id.startsWith('exp_'))) {
-          localStorage.removeItem('bukukas_expenses');
-          return [];
-        }
-        return dedupeById(parsed);
-      } catch (e) {
-        return [];
-      }
-    }
-    return INITIAL_EXPENSES;
-  });
-
-  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>(() => {
-    const saved = localStorage.getItem('bukukas_audit_logs');
-    if (saved) {
-      try {
-        const parsed: AuditLogRecord[] = JSON.parse(saved);
-        if (parsed.some((l) => l.id && l.id.startsWith('log_'))) {
-          localStorage.removeItem('bukukas_audit_logs');
-          return [];
-        }
-        return dedupeById(parsed);
-      } catch (e) {
-        return [];
-      }
-    }
-    return INITIAL_AUDIT_LOGS;
-  });
+  // Inisialisasi state sebagai array kosong (Firebase Firestore sebagai Single Source of Truth)
+  const [closings, setClosings] = useState<ClosingRecord[]>([]);
+  const [expenses, setExpenses] = useState<ExpenseRecord[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([]);
 
   const [adminTab, setAdminTab] = useState<'dashboard' | 'approvals' | 'expenses' | 'reports' | 'cashiers' | 'audit' | 'settings'>('dashboard');
   const pendingClosingsCount = closings.filter((c) => c.status === 'pending').length;
@@ -97,13 +50,12 @@ function MainContent() {
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
 
-  // Firestore Real-Time Sync
+  // Firestore Real-Time Sync (Realtime Listener)
   useEffect(() => {
     // 1. Closings Sync
     let unsubClosings = () => {};
     try {
       const closingsRef = collection(db, 'closings');
-      // If cashier, query only their own cashierId; if admin, query all
       const q = isCashier && userProfile?.id
         ? query(closingsRef, where('cashierId', '==', userProfile.id))
         : closingsRef;
@@ -111,23 +63,21 @@ function MainContent() {
       unsubClosings = onSnapshot(
         q,
         (snap) => {
-          if (!snap.empty) {
-            const map = new Map<string, ClosingRecord>();
-            snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-            const list = Array.from(map.values());
-            setClosings(list);
-            localStorage.setItem('bukukas_closings', JSON.stringify(list));
-          }
+          const map = new Map<string, ClosingRecord>();
+          snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
+          const list = Array.from(map.values());
+          setClosings(list);
+          localStorage.setItem('bukukas_closings', JSON.stringify(list));
         },
         (err) => {
-          console.warn('Firestore closings onSnapshot note (using local cache):', err.message);
+          console.warn('Firestore closings onSnapshot note:', err.message);
         }
       );
     } catch (e) {
-      console.warn('Closings listener init failed, using local storage.');
+      console.warn('Closings listener init failed.');
     }
 
-    // 2. Expenses Sync (Admin only)
+    // 2. Expenses Sync (Admin)
     let unsubExpenses = () => {};
     if (isAdmin) {
       try {
@@ -135,24 +85,22 @@ function MainContent() {
         unsubExpenses = onSnapshot(
           expensesRef,
           (snap) => {
-            if (!snap.empty) {
-              const map = new Map<string, ExpenseRecord>();
-              snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-              const list = Array.from(map.values());
-              setExpenses(list);
-              localStorage.setItem('bukukas_expenses', JSON.stringify(list));
-            }
+            const map = new Map<string, ExpenseRecord>();
+            snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
+            const list = Array.from(map.values());
+            setExpenses(list);
+            localStorage.setItem('bukukas_expenses', JSON.stringify(list));
           },
           (err) => {
-            console.warn('Firestore expenses onSnapshot note (using local cache):', err.message);
+            console.warn('Firestore expenses onSnapshot note:', err.message);
           }
         );
       } catch (e) {
-        console.warn('Expenses listener init failed, using local storage.');
+        console.warn('Expenses listener init failed.');
       }
     }
 
-    // 3. Audit Logs Sync (Admin only)
+    // 3. Audit Logs Sync (Admin)
     let unsubAudit = () => {};
     if (isAdmin) {
       try {
@@ -160,22 +108,20 @@ function MainContent() {
         unsubAudit = onSnapshot(
           auditRef,
           (snap) => {
-            if (!snap.empty) {
-              const map = new Map<string, AuditLogRecord>();
-              snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
-              const list = Array.from(map.values()).sort(
-                (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-              );
-              setAuditLogs(list);
-              localStorage.setItem('bukukas_audit_logs', JSON.stringify(list));
-            }
+            const map = new Map<string, AuditLogRecord>();
+            snap.forEach((d) => map.set(d.id, { id: d.id, ...(d.data() as any) }));
+            const list = Array.from(map.values()).sort(
+              (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+            );
+            setAuditLogs(list);
+            localStorage.setItem('bukukas_audit_logs', JSON.stringify(list));
           },
           (err) => {
-            console.warn('Firestore audit onSnapshot note (using local cache):', err.message);
+            console.warn('Firestore audit onSnapshot note:', err.message);
           }
         );
       } catch (e) {
-        console.warn('Audit listener init failed, using local storage.');
+        console.warn('Audit listener init failed.');
       }
     }
 
@@ -201,7 +147,6 @@ function MainContent() {
       createdAt: new Date().toISOString(),
     };
 
-    // Save to Firestore
     try {
       await setDoc(doc(db, 'closings', id), newClosing);
     } catch (err) {
