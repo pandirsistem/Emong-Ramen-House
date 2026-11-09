@@ -91,6 +91,7 @@ function doPost(e) {
             if (data.uangKeluar !== undefined) sheet1.getRange(rowNum, 3).setValue(Number(data.uangKeluar) || 0);
             if (data.saldoBersih !== undefined) sheet1.getRange(rowNum, 4).setValue(Number(data.saldoBersih) || 0);
             if (data.pendingCount !== undefined) sheet1.getRange(rowNum, 5).setValue(Number(data.pendingCount) || 0);
+            if (data.userName !== undefined) sheet1.getRange(rowNum, 6).setValue(data.userName);
             if (data.date !== undefined) sheet1.getRange(rowNum, 7).setValue(data.date);
             if (data.typeCategory !== undefined) sheet1.getRange(rowNum, 8).setValue(data.typeCategory);
             if (data.notes !== undefined) {

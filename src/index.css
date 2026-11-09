@@ -136,6 +136,15 @@ button.bg-emerald-600 * {
   color: #ffffff !important;
 }
 
+/* KODE PRE & CODE DI DALAM MODAL TETAP TERANG & KONTRAS */
+.fixed.inset-0 pre,
+.fixed.inset-0 pre *,
+.fixed.inset-0 code,
+.fixed.inset-0 code * {
+  color: #38bdf8 !important;
+  font-weight: 500 !important;
+}
+
 /* PRINT THERMAL RECEIPT STYLING */
 @media print {
   body * {
