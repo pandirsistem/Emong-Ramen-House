@@ -364,6 +364,54 @@ function MainContent() {
     }
   };
 
+  const handleDeleteClosing = async (id: string) => {
+    setClosings((prev) => {
+      const updated = prev.filter((c) => c.id !== id);
+      try {
+        localStorage.setItem('bukukas_closings', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    try {
+      await deleteDoc(doc(db, 'closings', id));
+    } catch (err) {
+      console.error('Firestore delete closing error:', err);
+    }
+  };
+
+  const handleUpdateClosing = async (id: string, updateData: Partial<ClosingRecord>) => {
+    setClosings((prev) => {
+      const updated = prev.map((c) => (c.id === id ? { ...c, ...updateData } : c));
+      try {
+        localStorage.setItem('bukukas_closings', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    try {
+      await updateDoc(doc(db, 'closings', id), cleanFirestoreData(updateData));
+    } catch (err) {
+      console.error('Firestore update closing error:', err);
+    }
+  };
+
+  const handleUpdateExpense = async (id: string, updateData: Partial<ExpenseRecord>) => {
+    setExpenses((prev) => {
+      const updated = prev.map((e) => (e.id === id ? { ...e, ...updateData } : e));
+      try {
+        localStorage.setItem('bukukas_expenses', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+
+    try {
+      await updateDoc(doc(db, 'expenses', id), cleanFirestoreData(updateData));
+    } catch (err) {
+      console.error('Firestore update expense error:', err);
+    }
+  };
+
   // Voice AI trigger callbacks
   const handleVoiceConfirmClosing = (parsed: {
     cashAmount: number;
@@ -439,6 +487,9 @@ function MainContent() {
             onAddExpense={handleAddExpense}
             onReviewClosing={handleReviewClosing}
             onDeleteExpense={handleDeleteExpense}
+            onUpdateClosing={handleUpdateClosing}
+            onDeleteClosing={handleDeleteClosing}
+            onUpdateExpense={handleUpdateExpense}
             activeTab={adminTab}
             setActiveTab={setAdminTab}
           />

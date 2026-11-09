@@ -78,6 +78,9 @@ interface AdminViewProps {
   onAddExpense: (expense: Omit<ExpenseRecord, 'id' | 'createdAt'>) => Promise<ExpenseRecord>;
   onReviewClosing: (id: string, status: 'approved' | 'rejected', notes: string) => Promise<void>;
   onDeleteExpense: (id: string) => Promise<void>;
+  onUpdateClosing: (id: string, updateData: Partial<ClosingRecord>) => Promise<void>;
+  onDeleteClosing: (id: string) => Promise<void>;
+  onUpdateExpense: (id: string, updateData: Partial<ExpenseRecord>) => Promise<void>;
   activeTab: 'dashboard' | 'approvals' | 'expenses' | 'reports' | 'cashiers' | 'audit' | 'settings';
   setActiveTab: (tab: any) => void;
 }
@@ -91,6 +94,9 @@ export function AdminView({
   onAddExpense,
   onReviewClosing,
   onDeleteExpense,
+  onUpdateClosing,
+  onDeleteClosing,
+  onUpdateExpense,
   activeTab,
   setActiveTab,
 }: AdminViewProps) {
@@ -119,6 +125,21 @@ export function AdminView({
 
   // Receipt Modal state
   const [selectedReceiptClosing, setSelectedReceiptClosing] = useState<ClosingRecord | null>(null);
+
+  // Edit Closing / Expense State
+  const [editingClosing, setEditingClosing] = useState<ClosingRecord | null>(null);
+  const [editClosingCash, setEditClosingCash] = useState('');
+  const [editClosingNonCash, setEditClosingNonCash] = useState('');
+  const [editClosingPos, setEditClosingPos] = useState('');
+  const [editClosingNotes, setEditClosingNotes] = useState('');
+  const [editClosingStatus, setEditClosingStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
+
+  const [editingExpense, setEditingExpense] = useState<ExpenseRecord | null>(null);
+  const [editExpenseTitle, setEditExpenseTitle] = useState('');
+  const [editExpenseAmount, setEditExpenseAmount] = useState('');
+  const [editExpenseCategory, setEditExpenseCategory] = useState<ExpenseCategory>('Bahan Baku Utama' as ExpenseCategory);
+  const [editExpenseNotes, setEditExpenseNotes] = useState('');
+  const [editExpenseDate, setEditExpenseDate] = useState('');
 
   // Firestore Real-Time Cashier Accounts listener
   useEffect(() => {
@@ -1546,7 +1567,7 @@ export function AdminView({
           </div>
 
           {/* Data Table */}
-          <div className="border border-slate-200 rounded-xl overflow-x-auto">
+           <div className="border border-slate-200 rounded-xl overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-700">
               <thead className="bg-slate-50 border-b border-slate-200 font-bold text-slate-600 uppercase tracking-wider text-[11px]">
                 <tr>
@@ -1557,6 +1578,7 @@ export function AdminView({
                   <th className="p-3 text-right">Masuk (Rp)</th>
                   <th className="p-3 text-right">Keluar (Rp)</th>
                   <th className="p-3">Status</th>
+                  <th className="p-3 text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -1588,6 +1610,37 @@ export function AdminView({
                           {c.status}
                         </span>
                       </td>
+                      <td className="p-3 text-center whitespace-nowrap">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingClosing(c);
+                              setEditClosingCash(c.cashAmount.toString());
+                              setEditClosingNonCash(c.nonCashAmount.toString());
+                              setEditClosingPos(c.expectedPosAmount.toString());
+                              setEditClosingNotes(c.notes || '');
+                              setEditClosingStatus(c.status);
+                            }}
+                            className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-[11px] font-bold border border-amber-200 transition-colors cursor-pointer shadow-xs"
+                            title="Edit Data Setoran"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Yakin ingin menghapus setoran shift ${c.shift} tanggal ${c.date}?`)) {
+                                onDeleteClosing(c.id);
+                              }
+                            }}
+                            className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[11px] font-bold border border-rose-200 transition-colors cursor-pointer shadow-xs"
+                            title="Hapus Data Setoran"
+                          >
+                            Hapus
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -1609,6 +1662,37 @@ export function AdminView({
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700">
                         Selesai
                       </span>
+                    </td>
+                    <td className="p-3 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingExpense(e);
+                            setEditExpenseTitle(e.title);
+                            setEditExpenseAmount(e.amount.toString());
+                            setEditExpenseCategory(e.category);
+                            setEditExpenseNotes(e.notes || '');
+                            setEditExpenseDate(e.date);
+                          }}
+                          className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-900 rounded-lg text-[11px] font-bold border border-amber-200 transition-colors cursor-pointer shadow-xs"
+                          title="Edit Data Pengeluaran"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Yakin ingin menghapus pengeluaran "${e.title}" senilai Rp ${e.amount.toLocaleString('id-ID')}?`)) {
+                              onDeleteExpense(e.id);
+                            }
+                          }}
+                          className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-[11px] font-bold border border-rose-200 transition-colors cursor-pointer shadow-xs"
+                          title="Hapus Data Pengeluaran"
+                        >
+                          Hapus
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -1961,6 +2045,203 @@ export function AdminView({
         closing={selectedReceiptClosing}
         onClose={() => setSelectedReceiptClosing(null)}
       />
+
+      {/* Edit Closing Modal */}
+      {editingClosing && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-slate-900 text-base">Edit Data Setoran Closing</h3>
+              <button
+                type="button"
+                onClick={() => setEditingClosing(null)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Uang Tunai Fisik (Rp)</label>
+                <input
+                  type="text"
+                  value={editClosingCash}
+                  onChange={(e) => setEditClosingCash(formatCurrency(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-sm text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Uang Non-Tunai / QRIS (Rp)</label>
+                <input
+                  type="text"
+                  value={editClosingNonCash}
+                  onChange={(e) => setEditClosingNonCash(formatCurrency(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-sm text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Target POS (Rp)</label>
+                <input
+                  type="text"
+                  value={editClosingPos}
+                  onChange={(e) => setEditClosingPos(formatCurrency(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-sm text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Status Validasi</label>
+                <select
+                  value={editClosingStatus}
+                  onChange={(e) => setEditClosingStatus(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Catatan Keterangan</label>
+                <textarea
+                  rows={2}
+                  value={editClosingNotes}
+                  onChange={(e) => setEditClosingNotes(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setEditingClosing(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const cash = parseCurrency(editClosingCash);
+                  const nonCash = parseCurrency(editClosingNonCash);
+                  const pos = parseCurrency(editClosingPos);
+                  const totalPhy = cash + nonCash;
+                  const disc = totalPhy - pos;
+                  await onUpdateClosing(editingClosing.id, {
+                    cashAmount: cash,
+                    nonCashAmount: nonCash,
+                    expectedPosAmount: pos,
+                    discrepancyAmount: disc,
+                    notes: editClosingNotes,
+                    status: editClosingStatus,
+                    updatedAt: new Date().toISOString()
+                  });
+                  logAuditAction('EDIT_CLOSING', `Mengubah data setoran shift ${editingClosing.shift} tgl ${editingClosing.date}`);
+                  setEditingClosing(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow cursor-pointer"
+              >
+                Simpan Perubahan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Expense Modal */}
+      {editingExpense && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="font-extrabold text-slate-900 text-base">Edit Data Pengeluaran</h3>
+              <button
+                type="button"
+                onClick={() => setEditingExpense(null)}
+                className="text-slate-400 hover:text-slate-600 cursor-pointer text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Tanggal</label>
+                <input
+                  type="date"
+                  value={editExpenseDate}
+                  onChange={(e) => setEditExpenseDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-semibold text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Kategori SOP</label>
+                <select
+                  value={editExpenseCategory}
+                  onChange={(e) => setEditExpenseCategory(e.target.value as any)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                >
+                  {EXPENSE_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Nama Pengeluaran / Item</label>
+                <input
+                  type="text"
+                  value={editExpenseTitle}
+                  onChange={(e) => setEditExpenseTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-medium text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Nominal (Rp)</label>
+                <input
+                  type="text"
+                  value={editExpenseAmount}
+                  onChange={(e) => setEditExpenseAmount(formatCurrency(e.target.value))}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-sm text-slate-900 outline-none focus:ring-2 focus:ring-rose-500"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 uppercase mb-1">Catatan</label>
+                <textarea
+                  rows={2}
+                  value={editExpenseNotes}
+                  onChange={(e) => setEditExpenseNotes(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-800 outline-none focus:ring-2 focus:ring-rose-500 resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setEditingExpense(null)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  const amt = parseCurrency(editExpenseAmount);
+                  await onUpdateExpense(editingExpense.id, {
+                    date: editExpenseDate,
+                    category: editExpenseCategory,
+                    title: editExpenseTitle,
+                    amount: amt,
+                    notes: editExpenseNotes,
+                    updatedAt: new Date().toISOString()
+                  });
+                  logAuditAction('EDIT_EXPENSE', `Mengubah data pengeluaran "${editExpenseTitle}" senilai Rp ${amt.toLocaleString('id-ID')}`);
+                  setEditingExpense(null);
+                }}
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow cursor-pointer"
+              >
+                Simpan Perubahan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Export Modal with Date Range Selector & Preview */}
       <ExportModal
