@@ -11,6 +11,7 @@ import {
   DollarSign
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { getValidSpreadsheetUrl, openExternalGoogleSheets } from '../lib/googleSheets';
 
 interface BottomNavProps {
   activeTab: 'dashboard' | 'approvals' | 'expenses' | 'reports' | 'cashiers' | 'audit' | 'settings';
@@ -114,9 +115,10 @@ export function BottomNav({
 
             {settings.spreadsheetUrl && (
               <a
-                href={settings.spreadsheetUrl}
+                href={getValidSpreadsheetUrl(settings.spreadsheetUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => openExternalGoogleSheets(settings.spreadsheetUrl, e)}
                 className="flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-xl text-emerald-300 hover:text-white hover:bg-white/5 transition-all cursor-pointer select-none active:scale-95"
               >
                 <FileSpreadsheet className="w-5 h-5 text-emerald-400" />

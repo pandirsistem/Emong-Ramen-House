@@ -295,3 +295,70 @@ export async function sendTelegramNotification(
     return false;
   }
 }
+
+/**
+ * Resolves a safe, accessible Google Sheets URL.
+ * Automatically cleans whitespace, prepends https:// if missing,
+ * and falls back to Google Sheets Home if placeholder or empty.
+ */
+export function getValidSpreadsheetUrl(rawUrl?: string): string {
+  if (!rawUrl || typeof rawUrl !== 'string') {
+    return 'https://docs.google.com/spreadsheets';
+  }
+  const trimmed = rawUrl.trim();
+  if (!trimmed || trimmed.includes('your-spreadsheet-id') || trimmed.includes('your-id')) {
+    return 'https://docs.google.com/spreadsheets';
+  }
+  if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://')) {
+    return `https://${trimmed}`;
+  }
+  return trimmed;
+}
+
+/**
+ * Robust cross-platform launcher for Google Sheets that works reliably
+ * in Mobile Standalone PWAs (iOS Safari Add to Home Screen & Android Chrome PWA),
+ * WebViews, and desktop browsers without being blocked by popup blockers.
+ */
+export function openExternalGoogleSheets(url: string, e?: React.MouseEvent): void {
+  const targetUrl = getValidSpreadsheetUrl(url);
+
+  // Detect Mobile PWA Standalone Mode (iOS WebClip or Android PWA)
+  const isStandalone =
+    typeof window !== 'undefined' &&
+    (window.matchMedia?.('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true);
+
+  // In mobile standalone PWA on Android & iOS, invoking window.open synchronously
+  // within the active user gesture stack instructs the mobile OS to launch Mobile Safari / Chrome
+  // or the native Google Sheets app directly.
+  if (isStandalone) {
+    try {
+      const win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+      if (win) {
+        if (e && typeof e.preventDefault === 'function') {
+          e.preventDefault();
+        }
+        return;
+      }
+    } catch (err) {
+      console.warn('[PWA Sheets] Standalone window.open fallback:', err);
+    }
+  }
+
+  // Fallback for standalone when window.open is restricted or non-anchor click:
+  if (!e || (e.currentTarget && (e.currentTarget as HTMLElement).tagName !== 'A')) {
+    try {
+      const a = document.createElement('a');
+      a.href = targetUrl;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch {
+      window.location.href = targetUrl;
+    }
+  }
+}
+

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ClosingRecord, ShiftType } from '../types';
-import { createWhatsAppNotificationUrl, sendToGoogleSheetsWebhook } from '../lib/googleSheets';
+import { createWhatsAppNotificationUrl, sendToGoogleSheetsWebhook, getValidSpreadsheetUrl, openExternalGoogleSheets } from '../lib/googleSheets';
 import confetti from 'canvas-confetti';
 import { ReceiptModal } from './ReceiptModal';
 import { formatCurrency, parseCurrency } from '../lib/formatters';
@@ -191,9 +191,10 @@ export function CashierView({ onOpenVoice, closings, onAddClosing }: CashierView
           <div className="flex items-center gap-1.5 shrink-0">
             {settings.spreadsheetUrl && (
               <a
-                href={settings.spreadsheetUrl}
+                href={getValidSpreadsheetUrl(settings.spreadsheetUrl)}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={(e) => openExternalGoogleSheets(settings.spreadsheetUrl, e)}
                 className="inline-flex items-center justify-center gap-1.5 px-2.5 py-2 sm:px-3.5 sm:py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] sm:text-xs rounded-lg sm:rounded-xl shadow-md transition-all active:scale-95 shrink-0"
                 title="Buka Google Sheets"
               >

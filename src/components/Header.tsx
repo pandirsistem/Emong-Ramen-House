@@ -24,7 +24,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { PWAInstallButton } from './PWAInstallButton';
 import { ClosingRecord, ExpenseRecord } from '../types';
-import { exportAllToGoogleSheets } from '../lib/googleSheets';
+import { exportAllToGoogleSheets, getValidSpreadsheetUrl, openExternalGoogleSheets } from '../lib/googleSheets';
 
 interface HeaderProps {
   onOpenVoice: () => void;
@@ -56,19 +56,23 @@ export function Header({
   const rawPhone = phone.replace(/\D/g, '');
   const cleanPhone = rawPhone.startsWith('0') ? '62' + rawPhone.slice(1) : (rawPhone.startsWith('62') ? rawPhone : '62' + rawPhone);
 
-  const handleGoogleSheetsClick = async () => {
+  const spreadsheetUrl = getValidSpreadsheetUrl(settings.spreadsheetUrl);
+
+  const handleGoogleSheetsClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    // 1. Non-blocking background sync to webhook if configured (never awaits so user gesture remains active)
     if (settings.webhookUrl && closings && expenses) {
       setIsExporting(true);
-      try {
-        await exportAllToGoogleSheets(settings.webhookUrl, closings, expenses, settings);
-      } catch (e) {
-        console.warn('Auto export to Google Sheets failed:', e);
-      } finally {
-        setIsExporting(false);
-      }
+      exportAllToGoogleSheets(settings.webhookUrl, closings, expenses, settings)
+        .catch((err) => {
+          console.warn('Auto export to Google Sheets failed:', err);
+        })
+        .finally(() => {
+          setIsExporting(false);
+        });
     }
-    const url = settings.spreadsheetUrl || 'https://docs.google.com/spreadsheets';
-    window.open(url, '_blank', 'noopener,noreferrer');
+
+    // 2. Mobile PWA standalone & browser-safe navigation (opens in Mobile Safari / Chrome or native Sheets app)
+    openExternalGoogleSheets(spreadsheetUrl, e);
   };
 
   return (
@@ -135,18 +139,19 @@ export function Header({
             <span className="hidden md:inline text-amber-100">Voice</span>
           </button>
 
-          {/* GOOGLE SHEETS BUTTON */}
-          <button
-            type="button"
+          {/* GOOGLE SHEETS BUTTON / LINK (Mobile & Desktop PWA Compliant) */}
+          <a
+            href={spreadsheetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={handleGoogleSheetsClick}
-            disabled={isExporting}
-            className="inline-flex items-center justify-center gap-1 px-2 py-1 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-400/40 text-[10px] sm:text-xs font-bold transition-all min-h-[28px] sm:min-h-[36px] cursor-pointer disabled:opacity-50 active:scale-95 shadow-sm shrink-0"
+            className="inline-flex items-center justify-center gap-1 px-2 py-1 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white border border-emerald-400/40 text-[10px] sm:text-xs font-bold transition-all min-h-[28px] sm:min-h-[36px] cursor-pointer active:scale-95 shadow-sm shrink-0"
             title="Buka Spreadsheet Google Sheets & Sinkronkan Data"
           >
             <FileSpreadsheet className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-100 shrink-0 ${isExporting ? 'animate-spin' : ''}`} />
             <span className="font-extrabold whitespace-nowrap">{isExporting ? 'Sync...' : 'Sheets'}</span>
             <ExternalLink className="w-2.5 h-2.5 text-emerald-200 hidden sm:inline" />
-          </button>
+          </a>
 
           {/* Setup Guide Button */}
           {isAdmin && (
@@ -333,11 +338,13 @@ export function Header({
                     })}
 
                     <div className="pt-2 mt-1 border-t border-slate-100 space-y-1">
-                      <button
-                        type="button"
-                        onClick={() => {
+                      <a
+                        href={spreadsheetUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
                           setShowNavMenu(false);
-                          handleGoogleSheetsClick();
+                          handleGoogleSheetsClick(e);
                         }}
                         className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl font-bold text-xs bg-emerald-50 text-emerald-900 hover:bg-emerald-100 transition-all cursor-pointer border border-emerald-200"
                       >
@@ -346,7 +353,7 @@ export function Header({
                           <span>Buka Google Sheets</span>
                         </div>
                         <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
-                      </button>
+                      </a>
                       <button
                         type="button"
                         onClick={() => {
