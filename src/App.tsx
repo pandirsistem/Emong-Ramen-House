@@ -23,7 +23,8 @@ import {
   updateDoc,
   deleteDoc,
   query,
-  where
+  where,
+  enableNetwork
 } from 'firebase/firestore';
 
 // Helper to strictly deduplicate arrays by ID
@@ -87,15 +88,29 @@ function MainContent() {
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isOnline, setIsOnline] = useState<boolean>(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
-  // Monitor network connectivity state
+  // Monitor network connectivity state & auto-reconnect on visibility/focus
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
+    const handleVisibilityOrFocus = async () => {
+      if (document.visibilityState === 'visible') {
+        setIsOnline(navigator.onLine);
+        try {
+          await enableNetwork(db);
+        } catch (e) {}
+      }
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
     };
   }, []);
 

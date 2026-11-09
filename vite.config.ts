@@ -17,6 +17,34 @@ export default defineConfig(() => {
           clientsClaim: true,
           maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
           globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}'],
+          runtimeCaching: [
+            {
+              urlPattern: /^https:\/\/(fonts\.googleapis\.com|fonts\.gstatic\.com)\/.*/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'google-fonts-cache',
+                expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              },
+            },
+            {
+              urlPattern: /^https:\/\/firestore\.googleapis\.com\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'firestore-api-cache',
+                networkTimeoutSeconds: 4,
+                expiration: { maxEntries: 50, maxAgeSeconds: 60 * 5 },
+              },
+            },
+            {
+              urlPattern: /\/.*/i,
+              handler: 'NetworkFirst',
+              options: {
+                cacheName: 'pages-cache',
+                networkTimeoutSeconds: 3,
+                expiration: { maxEntries: 50, maxAgeSeconds: 60 * 60 * 24 },
+              },
+            }
+          ],
         },
         manifest: {
           id: '/',
