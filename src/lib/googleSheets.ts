@@ -1,7 +1,7 @@
 import { ClosingRecord, ExpenseRecord, AppSettings } from '../types';
 
 export const GOOGLE_APPS_SCRIPT_TEMPLATE = `/**
- * Google Apps Script Webhook & Auto-Backup
+ * Google Apps Script Webhook & Auto-Backup (Two-Way Sync: Update & Delete support)
  * Pasang di Google Spreadsheet: Extensions > Apps Script
  * Deploy: New Deployment > Web app > Execute as: Me > Who has access: Anyone
  */
@@ -15,8 +15,7 @@ function doPost(e) {
     var data = JSON.parse(rawData);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    // 1. Sheet1 / Ringkasan & Transaksi Utama dengan kolom kustom:
-    // UANG MODAL, UANG MASUK, UANG KELUAR, SALDO BERSIH, PENDING, NAMA USER, TANGGAL, KETERANGAN
+    // Kolom: A: UANG MODAL, B: UANG MASUK, C: UANG KELUAR, D: SALDO BERSIH, E: PENDING, F: NAMA USER, G: TANGGAL, H: JENIS / KATEGORI, I: KETERANGAN, J: JUMLAH (Rp)
     var sheet1 = ss.getSheetByName('Sheet1') || ss.getSheets()[0];
     if (sheet1.getName() !== 'Sheet1') {
       sheet1.setName('Sheet1');
@@ -35,73 +34,84 @@ function doPost(e) {
       var records = data.records;
       for (var i = 0; i < records.length; i++) {
         var rec = records[i];
+        var idTag = rec.id ? '[ID:' + rec.id + '] ' : '';
         sheet1.appendRow([
-          rec.uangModal || 0,
-          rec.uangMasuk || 0,
-          rec.uangKeluar || 0,
-          rec.saldoBersih || 0,
-          rec.pending || 0,
+          Number(rec.uangModal) || 0,
+          Number(rec.uangMasuk) || 0,
+          Number(rec.uangKeluar) || 0,
+          Number(rec.saldoBersih) || 0,
+          Number(rec.pending) || 0,
           rec.userName || '',
           rec.date || '',
           rec.type || '',
-          rec.title || rec.notes || '',
-          rec.amount || 0
+          idTag + (rec.title || rec.notes || ''),
+          Number(rec.amount) || 0
         ]);
       }
     } else if (data.type === 'closing') {
-      var sheetMasuk = ss.getSheetByName('Uang Masuk') || ss.insertSheet('Uang Masuk');
-      if (sheetMasuk.getLastRow() === 0) {
-        sheetMasuk.appendRow([
-          'Timestamp', 'ID', 'Tanggal', 'Nama Kasir', 'Shift', 'Fisik Tunai', 'Non-Tunai', 'Total Masuk', 'Target POS', 'Selisih', 'Status', 'Catatan'
-        ]);
-        sheetMasuk.getRange(1, 1, 1, 12).setFontWeight('bold').setBackground('#10B981').setFontColor('#FFFFFF');
-      }
       var totalMasuk = (Number(data.cashAmount) || 0) + (Number(data.nonCashAmount) || 0);
-      sheetMasuk.appendRow([
-        new Date(), data.id || '', data.date || '', data.cashierName || '', data.shift || '',
-        Number(data.cashAmount) || 0, Number(data.nonCashAmount) || 0, totalMasuk,
-        Number(data.expectedPosAmount) || 0, Number(data.discrepancyAmount) || 0,
-        data.status || 'pending', data.notes || ''
-      ]);
-
+      var idTag = data.id ? '[ID:' + data.id + '] ' : '';
       sheet1.appendRow([
-        data.uangModal || 0,
+        Number(data.uangModal) || 0,
         totalMasuk,
         0,
-        data.saldoBersih || 0,
-        data.pendingCount || 0,
+        Number(data.saldoBersih) || 0,
+        Number(data.pendingCount) || 0,
         data.cashierName || '',
         data.date || '',
-        'UANG MASUK (CLOSING)',
-        data.notes || 'Setoran kasir shift ' + (data.shift || ''),
+        'UANG MASUK (CLOSING - ' + (data.shift || 'Pagi') + ')',
+        idTag + (data.notes || 'Setoran kasir'),
         totalMasuk
       ]);
-
     } else if (data.type === 'expense') {
-      var sheetKeluar = ss.getSheetByName('Pengeluaran') || ss.insertSheet('Pengeluaran');
-      if (sheetKeluar.getLastRow() === 0) {
-        sheetKeluar.appendRow([
-          'Timestamp', 'ID', 'Tanggal', 'Kategori', 'Nama Pengeluaran', 'Jumlah (Rp)', 'Dicatat Oleh', 'Catatan'
-        ]);
-        sheetKeluar.getRange(1, 1, 1, 8).setFontWeight('bold').setBackground('#EF4444').setFontColor('#FFFFFF');
-      }
-      sheetKeluar.appendRow([
-        new Date(), data.id || '', data.date || '', data.category || '', data.title || '',
-        Number(data.amount) || 0, data.recordedByName || 'Admin', data.notes || ''
-      ]);
-
+      var amount = Number(data.amount) || 0;
+      var idTag = data.id ? '[ID:' + data.id + '] ' : '';
       sheet1.appendRow([
-        data.uangModal || 0,
+        Number(data.uangModal) || 0,
         0,
-        Number(data.amount) || 0,
-        data.saldoBersih || 0,
-        data.pendingCount || 0,
+        amount,
+        Number(data.saldoBersih) || 0,
+        Number(data.pendingCount) || 0,
         data.recordedByName || 'Admin',
         data.date || '',
-        'PENGELUARAN (' + (data.category || '') + ')',
-        data.title || data.notes || '',
-        Number(data.amount) || 0
+        'PENGELUARAN (' + (data.category || 'Operasional') + ')',
+        idTag + (data.title || data.notes || ''),
+        amount
       ]);
+    } else if (data.type === 'update') {
+      var targetId = data.id;
+      if (targetId) {
+        var rows = sheet1.getDataRange().getValues();
+        for (var r = 1; r < rows.length; r++) {
+          var desc = String(rows[r][8] || ''); // Col I is index 8
+          if (desc.indexOf('[ID:' + targetId + ']') !== -1) {
+            var rowNum = r + 1;
+            if (data.uangModal !== undefined) sheet1.getRange(rowNum, 1).setValue(Number(data.uangModal) || 0);
+            if (data.uangMasuk !== undefined) sheet1.getRange(rowNum, 2).setValue(Number(data.uangMasuk) || 0);
+            if (data.uangKeluar !== undefined) sheet1.getRange(rowNum, 3).setValue(Number(data.uangKeluar) || 0);
+            if (data.saldoBersih !== undefined) sheet1.getRange(rowNum, 4).setValue(Number(data.saldoBersih) || 0);
+            if (data.pendingCount !== undefined) sheet1.getRange(rowNum, 5).setValue(Number(data.pendingCount) || 0);
+            if (data.date !== undefined) sheet1.getRange(rowNum, 7).setValue(data.date);
+            if (data.typeCategory !== undefined) sheet1.getRange(rowNum, 8).setValue(data.typeCategory);
+            if (data.notes !== undefined) {
+              sheet1.getRange(rowNum, 9).setValue('[ID:' + targetId + '] ' + data.notes);
+            }
+            if (data.amount !== undefined) sheet1.getRange(rowNum, 10).setValue(Number(data.amount) || 0);
+            break;
+          }
+        }
+      }
+    } else if (data.type === 'delete') {
+      var targetId = data.id;
+      if (targetId) {
+        var rows = sheet1.getDataRange().getValues();
+        for (var r = rows.length - 1; r >= 1; r--) {
+          var desc = String(rows[r][8] || '');
+          if (desc.indexOf('[ID:' + targetId + ']') !== -1) {
+            sheet1.deleteRow(r + 1);
+          }
+        }
+      }
     } else if (data.type === 'revoke_user') {
       var sheetBlacklist = ss.getSheetByName('Kasir Nonaktif') || ss.insertSheet('Kasir Nonaktif');
       if (sheetBlacklist.getLastRow() === 0) {
@@ -116,7 +126,7 @@ function doPost(e) {
     }
 
     return ContentService
-      .createTextOutput(JSON.stringify({ status: 'success', message: 'Data berhasil disinkronkan ke Google Sheets' }))
+      .createTextOutput(JSON.stringify({ status: 'success', message: 'Sync Google Sheets berhasil' }))
       .setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
@@ -129,14 +139,13 @@ function doPost(e) {
 }
 
 function doGet(e) {
-  return ContentService.createTextOutput("Webhook BukuKas Pro & Keuangan AI Aktif!");
+  return ContentService.createTextOutput("Webhook Emong Ramen House Aktif!");
 }
 `;
 
-// Post transaction data to Webhook URL
 export async function sendToGoogleSheetsWebhook(
   webhookUrl: string,
-  payload: { type: 'closing' | 'expense' | 'export_all' | 'revoke_user' } & Record<string, any>
+  payload: { type: 'closing' | 'expense' | 'export_all' | 'revoke_user' | 'update' | 'delete' } & Record<string, any>
 ): Promise<{ success: boolean; message?: string }> {
   if (!webhookUrl || !webhookUrl.startsWith('http')) {
     return { success: false, message: 'URL Webhook Google Sheets belum diatur.' };
@@ -159,7 +168,6 @@ export async function sendToGoogleSheetsWebhook(
   }
 }
 
-// Batch export all records to Google Sheets webhook
 export async function exportAllToGoogleSheets(
   webhookUrl: string,
   closings: ClosingRecord[],
@@ -180,10 +188,10 @@ export async function exportAllToGoogleSheets(
 
   const records: any[] = [];
 
-  // Add closings
   closings.forEach((c) => {
     const masuk = (c.cashAmount || 0) + (c.nonCashAmount || 0);
     records.push({
+      id: c.id,
       uangModal,
       uangMasuk: masuk,
       uangKeluar: 0,
@@ -197,9 +205,9 @@ export async function exportAllToGoogleSheets(
     });
   });
 
-  // Add expenses
   expenses.forEach((e) => {
     records.push({
+      id: e.id,
       uangModal,
       uangMasuk: 0,
       uangKeluar: e.amount || 0,
@@ -224,7 +232,6 @@ export async function exportAllToGoogleSheets(
   });
 }
 
-// Generate direct WhatsApp closing summary link for Admin notification
 export function createWhatsAppNotificationUrl(
   adminPhone: string,
   closing: ClosingRecord,
@@ -264,7 +271,6 @@ ${closing.discrepancyReason ? `📝 *Alasan Selisih:* ${closing.discrepancyReaso
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }
 
-// Send alert to Telegram Bot if bot token and chat id are set
 export async function sendTelegramNotification(
   botToken: string,
   chatId: string,
